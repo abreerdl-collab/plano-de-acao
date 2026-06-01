@@ -1,0 +1,336 @@
+BACKUP PLANO DE AÇÃO SST
+
+create table if not exists public.user_states (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.user_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  display_name text not null default '',
+  role text not null default '',
+  company text not null default '',
+  email text not null default '',
+  avatar_color text not null default '#2563eb',
+  avatar_photo text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.shared_states (
+  id text primary key,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.user_states enable row level security;
+alter table public.user_profiles enable row level security;
+alter table public.shared_states enable row level security;
+
+revoke all on table public.user_states from anon;
+revoke all on table public.user_states from authenticated;
+revoke all on table public.user_profiles from anon;
+revoke all on table public.user_profiles from authenticated;
+revoke all on table public.shared_states from anon;
+revoke all on table public.shared_states from authenticated;
+
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on table public.user_states to authenticated;
+grant select, insert, update on table public.user_profiles to authenticated;
+grant select, insert, update on table public.shared_states to authenticated;
+
+drop policy if exists "user reads own data" on public.user_states;
+drop policy if exists "user inserts own data" on public.user_states;
+drop policy if exists "user updates own data" on public.user_states;
+drop policy if exists "user deletes own data" on public.user_states;
+
+create policy "user reads own data"
+on public.user_states
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "user inserts own data"
+on public.user_states
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "user updates own data"
+on public.user_states
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "user deletes own data"
+on public.user_states
+for delete
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "authenticated users can read profiles" on public.user_profiles;
+drop policy if exists "users insert own profile" on public.user_profiles;
+drop policy if exists "users update own profile" on public.user_profiles;
+drop policy if exists "authenticated read profiles" on public.user_profiles;
+drop policy if exists "authenticated upsert own profile" on public.user_profiles;
+drop policy if exists "authenticated update own profile" on public.user_profiles;
+
+create policy "authenticated users can read profiles"
+on public.user_profiles
+for select
+to authenticated
+using (true);
+
+create policy "users insert own profile"
+on public.user_profiles
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "users update own profile"
+on public.user_profiles
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "authenticated read shared state" on public.shared_states;
+drop policy if exists "authenticated insert shared state" on public.shared_states;
+drop policy if exists "authenticated update shared state" on public.shared_states;
+
+create policy "authenticated read shared state"
+on public.shared_states
+for select
+to authenticated
+using (id = 'main');
+
+create policy "authenticated insert shared state"
+on public.shared_states
+for insert
+to authenticated
+with check (id = 'main');
+
+create policy "authenticated update shared state"
+on public.shared_states
+for update
+to authenticated
+using (id = 'main')
+with check (id = 'main');
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_user_states_updated_at on public.user_states;
+
+create trigger trg_user_states_updated_at
+before update on public.user_states
+for each row
+execute function public.set_updated_at();
+
+drop trigger if exists trg_user_profiles_updated_at on public.user_profiles;
+
+create trigger trg_user_profiles_updated_at
+before update on public.user_profiles
+for each row
+execute function public.set_updated_at();
+
+drop trigger if exists trg_shared_states_updated_at on public.shared_states;
+
+create trigger trg_shared_states_updated_at
+before update on public.shared_states
+for each row
+execute function public.set_updated_at();
+
+insert into public.user_profiles (
+  user_id,
+  display_name,
+  email,
+  avatar_color,
+  updated_at
+)
+select
+  id,
+  coalesce(nullif(split_part(email, '@', 1), ''), 'Usuário'),
+  coalesce(email, ''),
+  '#2563eb',
+  now()
+from auth.users
+on conflict (user_id) do update
+set
+  email = excluded.email
+where public.user_profiles.email is distinct from excluded.email;
+
+create or replace function public.create_profile_for_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  insert into public.user_profiles (
+    user_id,
+    display_name,
+    email,
+    avatar_color,
+    updated_at
+  )
+  values (
+    new.id,
+    coalesce(nullif(split_part(new.email, '@', 1), ''), 'Usuário'),
+    coalesce(new.email, ''),
+    '#2563eb',
+    now()
+  )
+  on conflict (user_id) do nothing;
+
+  return new;
+end;
+$$;
+
+revoke all on function public.create_profile_for_new_user() from public;
+revoke all on function public.create_profile_for_new_user() from anon;
+revoke all on function public.create_profile_for_new_user() from authenticated;
+
+drop trigger if exists on_auth_user_created_create_public_profile on auth.users;
+
+create trigger on_auth_user_created_create_public_profile
+after insert on auth.users
+for each row
+execute function public.create_profile_for_new_user();
+
+do $$
+begin
+  if exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'user_states'
+  ) then
+    alter publication supabase_realtime drop table public.user_states;
+  end if;
+
+  if exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'user_profiles'
+  ) then
+    alter publication supabase_realtime drop table public.user_profiles;
+  end if;
+
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'shared_states'
+  ) then
+    alter publication supabase_realtime add table public.shared_states;
+  end if;
+end $$;
+
+
+
+OUTRO
+
+-- Reforco de seguranca para o usuario administrativo de leitura operacional.
+-- Execute no SQL Editor do Supabase.
+-- Objetivo: permitir SELECT pelas politicas existentes, mas impedir INSERT/UPDATE/DELETE
+-- do usuario administrativo@protege.med.br nas tabelas usadas pelo sistema.
+
+alter table public.shared_states enable row level security;
+alter table public.user_profiles enable row level security;
+
+create table if not exists public.restricted_access_logs (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  user_id uuid,
+  user_email text not null,
+  detail text not null,
+  profile_id text,
+  profile_name text,
+  plan_id text,
+  plan_title text
+);
+
+alter table public.restricted_access_logs enable row level security;
+
+grant select, insert on public.restricted_access_logs to authenticated;
+
+drop policy if exists "tecnicos consultam tentativas restritas" on public.restricted_access_logs;
+drop policy if exists "usuarios registram propria tentativa restrita" on public.restricted_access_logs;
+
+create policy "tecnicos consultam tentativas restritas"
+on public.restricted_access_logs
+for select
+to authenticated
+using (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
+
+create policy "usuarios registram propria tentativa restrita"
+on public.restricted_access_logs
+for insert
+to authenticated
+with check (lower(coalesce(auth.jwt() ->> 'email', '')) = lower(user_email));
+
+drop policy if exists "bloquear escrita administrativo shared_states insert" on public.shared_states;
+drop policy if exists "bloquear escrita administrativo shared_states update" on public.shared_states;
+drop policy if exists "bloquear escrita administrativo shared_states delete" on public.shared_states;
+
+create policy "bloquear escrita administrativo shared_states insert"
+on public.shared_states
+as restrictive
+for insert
+to authenticated
+with check (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
+
+create policy "bloquear escrita administrativo shared_states update"
+on public.shared_states
+as restrictive
+for update
+to authenticated
+using (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br')
+with check (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
+
+create policy "bloquear escrita administrativo shared_states delete"
+on public.shared_states
+as restrictive
+for delete
+to authenticated
+using (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
+
+drop policy if exists "bloquear escrita administrativo user_profiles insert" on public.user_profiles;
+drop policy if exists "bloquear escrita administrativo user_profiles update" on public.user_profiles;
+drop policy if exists "bloquear escrita administrativo user_profiles delete" on public.user_profiles;
+
+create policy "bloquear escrita administrativo user_profiles insert"
+on public.user_profiles
+as restrictive
+for insert
+to authenticated
+with check (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
+
+create policy "bloquear escrita administrativo user_profiles update"
+on public.user_profiles
+as restrictive
+for update
+to authenticated
+using (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br')
+with check (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
+
+create policy "bloquear escrita administrativo user_profiles delete"
+on public.user_profiles
+as restrictive
+for delete
+to authenticated
+using (coalesce(auth.jwt() ->> 'email', '') <> 'administrativo@protege.med.br');
