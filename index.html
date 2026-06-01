@@ -4243,11 +4243,13 @@
 
       const SUPABASE_URL = "https://omyyxdjozumrlgpfexau.supabase.co";
       const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mjNFpgsW0K1X_7id1RADfA_Hk-A1_7i";
-      const APP_VERSION = "egress-fix-2026-05-27-1500";
+      const APP_VERSION = "egress-fix-2026-06-01-aba-lider";
       const EGRESS_DIAG_PREFIX = "[EGRESS-DIAG]";
       const SHARED_STATE_ID = "main";
       const SHARED_STORAGE_KEY = "planoDeAcaoSST.shared.v1";
       const SHARED_UPDATED_AT_CACHE_KEY = "planoDeAcaoSST.sharedUpdatedAt.v1";
+      const SYNC_LEADER_KEY = "planoDeAcaoSST.syncLeader.v1";
+      const PRESENCE_STORAGE_KEY = "planoDeAcaoSST.presence.v1";
       const LOCAL_MIGRATION_KEY = "planoDeAcaoSST.localMerged.v1";
       const STORAGE_KEY = "planoDeAcaoSST.v2";
       const LEGACY_KEY = "planoDeAcaoSST.v1";
@@ -4267,6 +4269,8 @@
       const HIDDEN_SYNC_PAUSE_MS = 10 * 60 * 1000;
       const INACTIVITY_RESET_THROTTLE_MS = 30 * 1000;
       const INACTIVITY_LOG_THROTTLE_MS = 60 * 1000;
+      const SYNC_LEADER_TTL_MS = 45 * 1000;
+      const SYNC_LEADER_HEARTBEAT_MS = 15 * 1000;
       const DEFAULT_DESCRIPTION = "A execução de cada uma das ações propostas configura um fator relevante para a redução dos riscos identificados, por isso deve ser considerado os responsáveis para que seja possível a aplicação de um ciclo de melhoria contínua (PDCA), onde após a realização de cada ação seja realizada uma nova análise dos riscos trabalhados e então atualizado o inventário de riscos.";
       const RESTRICTED_ADMIN_EMAILS = new Set(["administrativo@protege.med.br"]);
 
@@ -4280,6 +4284,7 @@
       let hydrateUserPromise = null;
       let hydrateUserId = "";
       let saveTimer = null;
+      let tabInstanceId = "tab-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
       let inactivityTimer = null;
       let inactivityTimerResetAt = 0;
       let inactivityResetLogAt = 0;
@@ -4294,6 +4299,7 @@
       let teamProfiles = [];
       let pendingProtectedAction = null;
       let syncTimer = null;
+      let syncLeaderTimer = null;
       let realtimeChannel = null;
       let lastSharedUpdatedAt = "";
       let lastLocalChangeAt = 0;
@@ -4793,7 +4799,12 @@
           if (supabaseClient) supabaseClient.auth.signOut();
         });
         document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("focus", () => syncSharedStateFromCloud({ source: "window-focus" }));
+        window.addEventListener("storage", handleCrossTabStorage);
+        window.addEventListener("focus", () => {
+          if (!currentUser || !cloudReady) return;
+          startSharedSync({ source: "window-focus", steal: true });
+          syncSharedStateFromCloud({ source: "window-focus", force: true, allowWhileEditing: true });
+        });
       }
 
       function resetInactivityTimer(options = {}) {
@@ -4827,6 +4838,161 @@
       function clearSessionLifecycleTimers() {
         clearInactivityTimer();
         clearHiddenSyncPauseTimer();
+      }
+
+      function readSyncLeader() {
+        const raw = localStorage.getItem(SYNC_LEADER_KEY);
+        if (!raw) return null;
+        try {
+          return JSON.parse(raw);
+        } catch (error) {
+          console.warn("Controle de aba lider invalido ignorado:", error);
+          localStorage.removeItem(SYNC_LEADER_KEY);
+          return null;
+        }
+      }
+
+      function writeSyncLeader(reason = "heartbeat") {
+        if (!currentUser) return;
+        localStorage.setItem(SYNC_LEADER_KEY, JSON.stringify({
+          tabId: tabInstanceId,
+          userId: currentUser.id,
+          updatedAt: Date.now(),
+          appVersion: APP_VERSION,
+          reason
+        }));
+      }
+
+      function isFreshSyncLeader(leader, now = Date.now()) {
+        return !!leader
+          && !!leader.tabId
+          && !!leader.userId
+          && Number.isFinite(Number(leader.updatedAt))
+          && now - Number(leader.updatedAt) < SYNC_LEADER_TTL_MS;
+      }
+
+      function isCurrentSyncLeader() {
+        if (!currentUser) return false;
+        const leader = readSyncLeader();
+        return !!leader
+          && leader.tabId === tabInstanceId
+          && leader.userId === currentUser.id
+          && isFreshSyncLeader(leader);
+      }
+
+      function ensureSyncLeader(options = {}) {
+        if (!currentUser || !cloudReady) return false;
+        const reason = options.reason || "unknown";
+        const now = Date.now();
+        const leader = readSyncLeader();
+        const ownLeader = leader && leader.tabId === tabInstanceId && leader.userId === currentUser.id;
+        const staleLeader = !isFreshSyncLeader(leader, now);
+        const canClaim = ownLeader
+          || staleLeader
+          || !!options.steal
+          || !leader
+          || leader.userId !== currentUser.id;
+
+        if (!canClaim || (!ownLeader && document.visibilityState !== "visible" && !options.allowHidden)) {
+          egressDiag("aba secundaria sem Supabase ativo", {
+            reason,
+            leaderAgeMs: leader && leader.updatedAt ? now - Number(leader.updatedAt) : null,
+            hasLeader: !!leader
+          });
+          return false;
+        }
+
+        writeSyncLeader(reason);
+        startSyncLeaderHeartbeat();
+        if (!ownLeader) egressDiag("aba assumiu sync Supabase", { reason, previousLeaderAgeMs: leader && leader.updatedAt ? now - Number(leader.updatedAt) : null });
+        return true;
+      }
+
+      function startSyncLeaderHeartbeat() {
+        if (syncLeaderTimer) return;
+        syncLeaderTimer = setInterval(() => {
+          if (!currentUser || !cloudReady || document.visibilityState !== "visible" || !isCurrentSyncLeader()) {
+            stopSyncLeaderHeartbeat();
+            return;
+          }
+          writeSyncLeader("heartbeat");
+        }, SYNC_LEADER_HEARTBEAT_MS);
+      }
+
+      function stopSyncLeaderHeartbeat() {
+        if (syncLeaderTimer) clearInterval(syncLeaderTimer);
+        syncLeaderTimer = null;
+      }
+
+      function releaseSyncLeadership() {
+        stopSyncLeaderHeartbeat();
+        const leader = readSyncLeader();
+        if (leader && leader.tabId === tabInstanceId) {
+          localStorage.removeItem(SYNC_LEADER_KEY);
+          egressDiag("lideranca de sync liberada");
+        }
+      }
+
+      function handleCrossTabStorage(event) {
+        if (!currentUser || !cloudReady) return;
+        if (event.key === SYNC_LEADER_KEY) {
+          const leader = readSyncLeader();
+          const currentOwnsLeader = leader && leader.tabId === tabInstanceId && leader.userId === currentUser.id;
+          if ((syncTimer || realtimeChannel) && !currentOwnsLeader) {
+            egressDiag("outra aba assumiu sync; Supabase local removido", {
+              hasLeader: !!leader
+            });
+            stopSharedSync({ releaseLeadership: false });
+            return;
+          }
+          if (!leader && document.visibilityState === "visible") {
+            startSharedSync({ source: "leader-released", steal: true });
+          }
+          return;
+        }
+
+        if (event.key === PRESENCE_STORAGE_KEY) {
+          applyPresenceCacheFromAnotherTab();
+          return;
+        }
+        if (event.key !== SHARED_STORAGE_KEY && event.key !== SHARED_UPDATED_AT_CACHE_KEY) return;
+        if (isCurrentSyncLeader()) return;
+        applySharedCacheFromAnotherTab();
+      }
+
+      function writePresenceCache() {
+        if (!currentUser || !isCurrentSyncLeader()) return;
+        localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify({
+          updatedAt: Date.now(),
+          userIds: Array.from(onlineUserIds)
+        }));
+      }
+
+      function applyPresenceCacheFromAnotherTab() {
+        if (!currentUser || !cloudReady || isCurrentSyncLeader()) return;
+        const raw = localStorage.getItem(PRESENCE_STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const data = JSON.parse(raw);
+          onlineUserIds = new Set(Array.isArray(data.userIds) ? data.userIds.filter(Boolean) : []);
+          if (app.view === "profiles") renderProfiles();
+        } catch (error) {
+          console.warn("Cache local de presenca ignorado:", error);
+        }
+      }
+
+      function applySharedCacheFromAnotherTab() {
+        if (!currentUser || !cloudReady || hasPendingCloudChanges() || isUserEditing()) return;
+        const cachedUpdatedAt = readLocalSharedUpdatedAt();
+        if (cachedUpdatedAt && cachedUpdatedAt === lastSharedUpdatedAt) return;
+        const cached = readLocalSharedCache();
+        if (!cached) return;
+        app = restoreLocalNavigation(cached, captureLocalNavigation());
+        if (cachedUpdatedAt) lastSharedUpdatedAt = cachedUpdatedAt;
+        selectedActions.clear();
+        renderApp();
+        if (app.view === "editor") markSaved();
+        egressDiag("cache compartilhado aplicado de outra aba", { cachedUpdatedAt });
       }
 
       async function handleInactivityLogout() {
@@ -4876,6 +5042,7 @@
 
       function handleTabHidden() {
         egressDiag("aba oculta, sync pausado", { pauseAfterMs: HIDDEN_SYNC_PAUSE_MS });
+        stopSyncLeaderHeartbeat();
         const ownProfile = updateOwnLastAccess();
         if (ownProfile) {
           saveApp({ profileId: ownProfile.id });
@@ -4913,7 +5080,7 @@
           return;
         }
         if (cloudReady) {
-          startSharedSync();
+          startSharedSync({ source: "tab-visible", steal: true });
           await syncSharedStateFromCloud({ force: true, allowWhileEditing: true, source: "tab-visible" });
         }
       }
@@ -9055,6 +9222,13 @@
           clearPendingCloudSnapshot(snapshot);
           return;
         }
+        if (!ensureSyncLeader({
+          reason: `saveAppToCloud:${options.source || "direct"}`,
+          steal: document.visibilityState === "visible" || options.source === "pagehide" || options.source === "inactivity-logout"
+        })) {
+          egressDiag("saveAppToCloud aguardando aba lider", { source: options.source || "direct" });
+          return;
+        }
         isSavingCloud = true;
         clearPendingCloudSnapshot(snapshot);
         let savedCloudOk = false;
@@ -9301,28 +9475,39 @@
         return candidateTime >= referenceTime;
       }
 
-      function startSharedSync() {
+      function startSharedSync(options = {}) {
         egressDiag("startSharedSync chamado", {
           hadTimer: !!syncTimer,
-          hadChannel: !!realtimeChannel
+          hadChannel: !!realtimeChannel,
+          source: options.source || "unknown"
         });
-        stopSharedSync();
+        if (!ensureSyncLeader({
+          reason: options.source || "startSharedSync",
+          steal: options.steal !== false
+        })) {
+          stopSharedSync({ releaseLeadership: false });
+          return;
+        }
+        stopSharedSync({ keepLeadership: true, releaseLeadership: false });
+        startSyncLeaderHeartbeat();
         subscribeRealtime();
         syncTimer = setInterval(() => {
           if (document.visibilityState === "visible") {
             syncSharedStateFromCloud({ source: "polling-fallback" });
           }
-        }, 300000);
-        egressDiag("polling criado", { intervalMs: 300000 });
+        }, 600000);
+        egressDiag("polling criado", { intervalMs: 600000 });
       }
 
-      function stopSharedSync() {
+      function stopSharedSync(options = {}) {
         if (syncTimer) {
           clearInterval(syncTimer);
           syncTimer = null;
           egressDiag("polling limpo");
         }
         unsubscribeRealtime();
+        if (!options.keepLeadership) stopSyncLeaderHeartbeat();
+        if (options.releaseLeadership !== false) releaseSyncLeadership();
       }
 
       function subscribeRealtime() {
@@ -9370,6 +9555,7 @@
         }
         realtimeChannel = null;
         onlineUserIds = new Set();
+        if (!isCurrentSyncLeader()) applyPresenceCacheFromAnotherTab();
         if (app.view === "profiles") renderProfiles();
       }
 
@@ -9380,6 +9566,7 @@
           .flat()
           .map(presence => presence.user_id)
           .filter(Boolean));
+        writePresenceCache();
         if (app.view === "profiles") renderProfiles();
       }
 
@@ -9397,6 +9584,14 @@
             cloudReady,
             isSavingCloud
           });
+          return;
+        }
+        if (!ensureSyncLeader({
+          reason: options.source || "syncSharedStateFromCloud",
+          steal: !!options.force && document.visibilityState === "visible"
+        })) {
+          egressDiag("syncSharedStateFromCloud ignorada por aba secundaria", { source: options.source || "unknown" });
+          stopSharedSync({ releaseLeadership: false });
           return;
         }
         if (!options.force && hasRecentLocalActivity()) {
