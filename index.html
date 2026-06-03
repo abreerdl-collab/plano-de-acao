@@ -1303,6 +1303,11 @@
       display: flex;
     }
 
+    .rich-toolbar.is-dragging {
+      opacity: 0.96;
+      user-select: none;
+    }
+
     .rich-toolbar button,
     .rich-toolbar select {
       height: 30px;
@@ -1317,6 +1322,18 @@
 
     .rich-toolbar button {
       min-width: 30px;
+    }
+
+    .rich-toolbar-drag {
+      width: 30px;
+      color: var(--muted);
+      cursor: grab;
+      letter-spacing: 0;
+      touch-action: none;
+    }
+
+    .rich-toolbar-drag:active {
+      cursor: grabbing;
     }
 
     .rich-toolbar .toolbar-separator {
@@ -4285,6 +4302,7 @@
   </section>
 
   <div class="rich-toolbar no-print" id="richToolbar" aria-label="Ferramentas de formatação">
+    <button class="rich-toolbar-drag" type="button" data-rich-toolbar-drag title="Arraste para mover a barra. Clique duas vezes para voltar ao automático." aria-label="Mover barra de edição">&#8942;&#8942;</button>
     <select id="richBlockSelect" title="Estilo do texto">
       <option value="">Texto</option>
       <option value="p">Parágrafo</option>
@@ -4416,6 +4434,8 @@
       let activeRichEditor = null;
       let activeRichRange = null;
       let selectedRichImage = null;
+      let richToolbarUserMoved = false;
+      let richToolbarDragState = null;
 
       const els = {
         authScreen: document.getElementById("authScreen"),
@@ -4871,6 +4891,8 @@
         els.richToolbar.addEventListener("mousedown", event => {
           if (!event.target.closest("select")) event.preventDefault();
         });
+        els.richToolbar.addEventListener("pointerdown", handleRichToolbarDragStart);
+        els.richToolbar.addEventListener("dblclick", resetRichToolbarPosition);
         els.richToolbar.addEventListener("click", handleRichToolbarClick);
         document.getElementById("richBlockSelect").addEventListener("change", applyRichBlock);
         document.getElementById("richSizeSelect").addEventListener("change", applyRichSize);
@@ -7828,12 +7850,78 @@
         if (isRestrictedAdminUser()) return;
         const rect = getSelectionRect() || editor.getBoundingClientRect();
         els.richToolbar.classList.add("is-visible");
+        if (richToolbarUserMoved) {
+          keepRichToolbarInViewport();
+          return;
+        }
         const toolbarWidth = Math.min(els.richToolbar.offsetWidth || 720, window.innerWidth - 16);
         const topOffset = window.innerWidth <= 760 ? 58 : 44;
         const top = Math.max(8, rect.top - topOffset);
         const left = Math.min(window.innerWidth - toolbarWidth - 8, Math.max(8, rect.left));
         els.richToolbar.style.top = top + "px";
         els.richToolbar.style.left = left + "px";
+      }
+
+      function handleRichToolbarDragStart(event) {
+        const handle = event.target.closest("[data-rich-toolbar-drag]");
+        if (!handle || !els.richToolbar.classList.contains("is-visible")) return;
+        event.preventDefault();
+        const rect = els.richToolbar.getBoundingClientRect();
+        richToolbarUserMoved = true;
+        richToolbarDragState = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          left: rect.left,
+          top: rect.top
+        };
+        els.richToolbar.classList.add("is-dragging");
+        if (handle.setPointerCapture) handle.setPointerCapture(event.pointerId);
+        document.addEventListener("pointermove", handleRichToolbarDragMove);
+        document.addEventListener("pointerup", handleRichToolbarDragEnd, { once: true });
+        document.addEventListener("pointercancel", handleRichToolbarDragEnd, { once: true });
+      }
+
+      function handleRichToolbarDragMove(event) {
+        if (!richToolbarDragState) return;
+        event.preventDefault();
+        setRichToolbarPosition(
+          richToolbarDragState.left + event.clientX - richToolbarDragState.startX,
+          richToolbarDragState.top + event.clientY - richToolbarDragState.startY
+        );
+      }
+
+      function handleRichToolbarDragEnd() {
+        richToolbarDragState = null;
+        els.richToolbar.classList.remove("is-dragging");
+        document.removeEventListener("pointermove", handleRichToolbarDragMove);
+        document.removeEventListener("pointerup", handleRichToolbarDragEnd);
+        document.removeEventListener("pointercancel", handleRichToolbarDragEnd);
+        keepRichToolbarInViewport();
+      }
+
+      function resetRichToolbarPosition(event) {
+        if (!event.target.closest("[data-rich-toolbar-drag]")) return;
+        event.preventDefault();
+        richToolbarUserMoved = false;
+        if (activeRichEditor) showRichToolbar(activeRichEditor);
+      }
+
+      function keepRichToolbarInViewport() {
+        const rect = els.richToolbar.getBoundingClientRect();
+        const left = Number.parseFloat(els.richToolbar.style.left) || rect.left || 8;
+        const top = Number.parseFloat(els.richToolbar.style.top) || rect.top || 8;
+        setRichToolbarPosition(left, top);
+      }
+
+      function setRichToolbarPosition(left, top) {
+        const rect = els.richToolbar.getBoundingClientRect();
+        const width = rect.width || els.richToolbar.offsetWidth || 320;
+        const height = rect.height || els.richToolbar.offsetHeight || 42;
+        const maxLeft = Math.max(8, window.innerWidth - width - 8);
+        const maxTop = Math.max(8, window.innerHeight - height - 8);
+        els.richToolbar.style.left = Math.min(maxLeft, Math.max(8, left)) + "px";
+        els.richToolbar.style.top = Math.min(maxTop, Math.max(8, top)) + "px";
       }
 
       function updateRichToolbarPosition() {
