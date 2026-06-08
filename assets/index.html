@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SATS</title>
+  <script src="./js/theme-bootstrap.js"></script>
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/plano-acao.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+  <link rel="stylesheet" href="./css/theme-dark.css">
+</head>
+<body>
+  <div class="restricted-readonly-banner hidden" id="restrictedReadonlyBanner">Acesso em modo somente leitura</div>
+  <main id="authScreen" class="screen auth-screen">
+    <div class="shell">
+      <header class="app-title">
+        <img class="auth-logo" src="./assets/logo.png" alt="SATS">
+        <p>Entre com seu usuário para sincronizar seus planos</p>
+      </header>
+      <section class="auth-panel" aria-label="Acesso ao sistema">
+        <form class="auth-form" id="authForm">
+          <label class="field">
+            E-mail
+            <input type="email" id="authEmail" autocomplete="email" required placeholder="seuemail@empresa.com">
+          </label>
+          <label class="field">
+            Senha
+            <span class="password-control">
+              <input type="password" id="authPassword" autocomplete="current-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+              <button class="password-toggle" type="button" data-toggle-password="authPassword" aria-label="Mostrar senha" title="Mostrar senha">
+                <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2.2-2.4 4.9-3.6 8-3.6s5.8 1.2 8 3.6"/><path d="M7 18l1.2-2.1"/><path d="M12 19v-2.5"/><path d="M17 18l-1.2-2.1"/></svg>
+                <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </span>
+          </label>
+          <div class="auth-actions">
+            <button class="button primary" type="submit" id="authLoginBtn">Entrar</button>
+          </div>
+          <button class="button ghost" type="button" id="forgotPasswordBtn">Esqueci minha senha</button>
+          <div class="auth-message" id="authMessage">Acesso permitido somente para usuários criados no Supabase.</div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <main id="appSelectorScreen" class="screen app-selector-screen hidden">
+    <div class="app-selector-shell">
+      <header class="app-selector-topbar">
+        <div class="portal-brand">
+          <img class="portal-logo-small" src="./assets/logo.png" alt="">
+          <span>
+            <strong>SATS</strong>
+            <span>Central de aplicativos</span>
+          </span>
+        </div>
+        <div class="app-selector-user">
+          <span class="app-selector-user-email" id="appSelectorUserEmail"></span>
+          <button class="button danger" type="button" id="appSelectorLogoutBtn">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            Sair
+          </button>
+        </div>
+      </header>
+
+      <section class="app-selector-intro">
+        <p class="app-selector-kicker">Seleção de aplicativo</p>
+        <h1>Bem Vindo ao SATS! Pronto para te ajudar!</h1>
+        <p>Escolha o aplicativo que deseja abrir.</p>
+      </section>
+
+      <section class="app-selector-grid" aria-label="Aplicativos disponíveis">
+        <button class="app-choice-card" type="button" data-app-choice="plans">
+          <span class="app-choice-icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
+          </span>
+          <strong>Plano de Ação</strong>
+          <p>Crie, organize, acompanhe e exporte planos de ação da empresa.</p>
+          <span class="app-choice-open">Abrir aplicativo <span aria-hidden="true">→</span></span>
+        </button>
+
+        <button class="app-choice-card" type="button" data-app-choice="procedures">
+          <span class="app-choice-icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>
+          </span>
+          <strong>Procedimentos</strong>
+          <p>Consulte procedimentos técnicos, riscos ocupacionais e orientações.</p>
+          <span class="app-choice-open">Abrir aplicativo <span aria-hidden="true">→</span></span>
+        </button>
+      </section>
+    </div>
+  </main>
+
+  <main id="proceduresScreen" class="screen procedures-screen hidden">
+    <iframe class="procedures-frame" id="proceduresFrame" title="Procedimentos - Setor Técnico" loading="lazy" src="./procedimentos.html"></iframe>
+    
+  </main>
+
+  <main id="profileScreen" class="screen profile-screen hidden">
+    <div class="shell">
+      <header class="app-title">
+        <h1>SATS</h1>
+        <p>Selecione um perfil</p>
+      </header>
+      <div class="profile-theme-bar">
+        <button class="theme-toggle" type="button" id="themeToggleBtn" aria-pressed="false" title="Alternar modo claro e escuro">
+          <span class="theme-toggle-track" aria-hidden="true">
+            <svg class="theme-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg class="theme-icon" viewBox="0 0 24 24"><path d="M20.9 14.7A8.5 8.5 0 0 1 9.3 3.1 8.5 8.5 0 1 0 20.9 14.7Z"/></svg>
+          </span>
+          <span data-theme-label>Modo light</span>
+        </button>
+        <button class="button" type="button" id="backToAppSelectorBtn" title="Voltar aos aplicativos">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+          Aplicativos
+        </button>
+        <button class="button" type="button" id="settingsBtn" title="Configurações">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+          Configurações
+        </button>
+      </div>
+      <section class="profile-grid" id="profileGrid" aria-label="Perfis cadastrados"></section>
+    </div>
+  </main>
+
+  <main id="folderScreen" class="screen folder-screen hidden">
+    <div class="shell">
+      <section class="explorer-shell">
+        <header class="topbar">
+          <div class="active-profile" id="activeProfileBadge"></div>
+          <div class="topbar-actions">
+            <button class="button" type="button" id="switchProfileBtn">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+              Trocar Perfil
+            </button>
+            <button class="button primary" type="button" id="newPlanBtn">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Novo Plano de Ação
+            </button>
+            <button class="button danger" type="button" id="logoutBtn">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+              Sair
+            </button>
+          </div>
+        </header>
+        <div class="explorer-layout">
+          <aside class="sidebar">
+            <div class="sidebar-head">
+              <h2>Pastas</h2>
+              <button class="button icon-only primary" type="button" id="newFolderBtn" title="Nova pasta" aria-label="Nova pasta">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              </button>
+            </div>
+            <div class="folder-list" id="folderList"></div>
+          </aside>
+          <section class="plans-area">
+            <div class="plans-head">
+              <h2 id="selectedFolderTitle">Planos</h2>
+              <span class="last-access" id="folderSummary"></span>
+            </div>
+            <div class="plans-grid" id="plansGrid"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <main id="editorScreen" class="screen editor-screen hidden">
+    <div class="shell">
+      <section class="document-shell" aria-label="Cronograma de ações de segurança do trabalho">
+        <header class="topbar no-print">
+          <div class="active-profile">
+            <button class="button" type="button" id="backToFoldersBtn">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+              Voltar às Pastas
+            </button>
+            <div class="editor-title">
+              <input type="text" id="planTitleInput" aria-label="Nome do plano">
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <span class="last-access" id="saveStatus">Salvo automaticamente</span>
+            <button class="button danger" type="button" id="logoutBtnEditor">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+              Sair
+            </button>
+          </div>
+        </header>
+
+        <header class="document-header">
+          <div class="brand-row">
+            <div class="brand">
+              <span class="logo-mark" aria-hidden="true"></span>
+              <div class="editable-text company-name" contenteditable="true" spellcheck="true" data-meta="companyLogo" aria-label="Logo ou nome da empresa"></div>
+            </div>
+            <h1 class="document-heading">CRONOGRAMA DE AÇÕES</h1>
+            <div class="revision-card">
+              <label class="field">
+                Data de criação / Revisão
+                <input type="text" data-meta="revisionDate" placeholder="19/05/2026 - Rev. 00">
+              </label>
+            </div>
+          </div>
+
+          <p class="editable-text intro" contenteditable="true" spellcheck="true" data-meta="description" aria-label="Parágrafo descritivo do cronograma"></p>
+
+          <div class="field-grid">
+            <label class="field">
+              Documento vinculado
+              <input type="text" data-meta="documentName" placeholder="PGR, PCMSO, LTCAT...">
+            </label>
+            <label class="field">
+              Empresa
+              <input type="text" data-meta="company" placeholder="Razão social ou nome fantasia">
+            </label>
+            <label class="field">
+              Responsável técnico / setor
+              <input type="text" data-meta="technicalOwner" placeholder="SESMT, consultoria, RH...">
+            </label>
+          </div>
+        </header>
+
+        <section class="dashboard" aria-label="Painel de resumo">
+          <article class="metric" data-tone="red">
+            <div class="metric-title">Total de Ações</div>
+            <div class="metric-value" id="metricTotal">0</div>
+            <div class="metric-sub">linhas na seção principal</div>
+          </article>
+          <article class="metric" data-tone="amber">
+            <div class="metric-title">Não Iniciadas</div>
+            <div class="metric-value" id="metricNotStarted">0</div>
+            <div class="metric-sub" id="metricNotStartedPct">0%</div>
+          </article>
+          <article class="metric" data-tone="blue">
+            <div class="metric-title">Em Andamento</div>
+            <div class="metric-value" id="metricInProgress">0</div>
+            <div class="metric-sub" id="metricInProgressPct">0%</div>
+          </article>
+          <article class="metric" data-tone="green">
+            <div class="metric-title">Concluídas</div>
+            <div class="metric-value" id="metricDone">0</div>
+            <div class="metric-sub" id="metricDonePct">0%</div>
+          </article>
+          <article class="metric">
+            <div class="metric-title">Progresso Geral</div>
+            <div class="metric-value" id="metricProgress">0%</div>
+            <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="metricProgressFill"></div></div>
+          </article>
+          <article class="metric" data-tone="hot">
+            <div class="metric-title">Alta Prioridade em Aberto</div>
+            <div class="metric-value" id="metricHighOpen">0</div>
+            <div class="metric-sub">não concluídas ou canceladas</div>
+          </article>
+        </section>
+
+        <section class="toolbar no-print" aria-label="Filtros e exportação">
+          <div class="toolbar-filters">
+            <label>
+              Busca global
+              <input type="search" id="searchInput" placeholder="Buscar por ação, responsável, status, observação...">
+            </label>
+            <label>
+              Prioridade
+              <select id="priorityFilter">
+                <option value="">Todas</option>
+                <option value="Alta">Alta</option>
+                <option value="Média">Média</option>
+                <option value="Baixa">Baixa</option>
+              </select>
+            </label>
+            <label>
+              Status
+              <select id="statusFilter">
+                <option value="">Todos</option>
+                <option value="Não iniciado">Não iniciado</option>
+                <option value="Em andamento">Em andamento</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </label>
+            <label>
+              Responsável
+              <select id="responsibleFilter">
+                <option value="">Todos</option>
+              </select>
+            </label>
+          </div>
+          <div class="toolbar-actions">
+            <div class="toolbar-template-group">
+              <label class="template-action-field" id="templateActionField">
+                Template
+                <span class="template-select-wrap">
+                  <select id="templateActionSelect" title="Escolha como gerar os dados deste plano">
+                    <option value="">Escolher modelo</option>
+                    <option value="blank">Plano em branco</option>
+                    <option value="template">Template padrão</option>
+                  </select>
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </span>
+              </label>
+            </div>
+            <div class="toolbar-export-group">
+              <button class="button" type="button" id="printBtn">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                Exportar PDF
+              </button>
+              <button class="button" type="button" id="exportRtfBtn">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
+                Exportar RTF
+              </button>
+              <button class="button" type="button" id="exportJpegBtn">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Exportar JPEG
+              </button>
+              <button class="button" type="button" id="exportJsonBtn">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                Exportar JSON
+              </button>
+              <button class="button" type="button" id="importJsonBtn">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                Importar JSON
+              </button>
+            </div>
+          </div>
+          <input id="importJsonInput" class="no-print" type="file" accept="application/json,.json" hidden>
+        </section>
+
+        <section class="bulkbar no-print" aria-label="Ações em lote">
+          <label class="selection-pill"><input type="checkbox" id="selectAllActions"> <span id="selectionCount">0 selecionadas</span></label>
+          <select id="bulkStatus" aria-label="Status para alteração em lote">
+            <option value="">Alterar status...</option>
+            <option value="Não iniciado">Não iniciado</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Concluído">Concluído</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+          <button class="button" type="button" id="applyBulkStatus">Aplicar</button>
+          <button class="button danger" type="button" id="deleteSelected">Excluir selecionadas</button>
+        </section>
+
+        <datalist id="responsibleSuggestions"></datalist>
+
+        <div class="content">
+          <section class="section" id="section-actions">
+            <div class="section-header">
+              <h2 class="section-title">AÇÕES</h2>
+              <div class="section-actions no-print">
+                <button class="button primary" type="button" data-add-section="actions">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  Adicionar Ação
+                </button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table aria-label="Tabela de ações">
+                <colgroup>
+                  <col style="width: 6%">
+                  <col style="width: 25.5%">
+                  <col style="width: 10%">
+                  <col style="width: 18%">
+                  <col style="width: 8%">
+                  <col style="width: 9.5%">
+                  <col style="width: 16.5%">
+                  <col style="width: 6.5%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>ITEM</th>
+                    <th>AÇÃO RECOMENDADA PARA IMPLEMENTAR/MANTER</th>
+                    <th>RESPONSÁVEL</th>
+                    <th>QUANDO</th>
+                    <th>PRIORIDADE</th>
+                    <th>STATUS</th>
+                    <th>OBSERVAÇÃO</th>
+                    <th class="no-print">OPÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody id="actionsBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section" id="section-equipment">
+            <div class="section-header">
+              <h2 class="section-title">EQUIPAMENTOS DE EMERGÊNCIA</h2>
+              <div class="section-actions no-print">
+                <button class="button primary" type="button" data-add-section="equipment">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  Adicionar Item
+                </button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="compact" aria-label="Tabela de equipamentos de emergência">
+                <colgroup>
+                  <col style="width: 84px">
+                  <col style="width: 36%">
+                  <col style="width: 17%">
+                  <col style="width: 15%">
+                  <col style="width: 22%">
+                  <col style="width: 92px">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>ITEM</th>
+                    <th>DESCRIÇÃO</th>
+                    <th>RESPONSÁVEL</th>
+                    <th>STATUS</th>
+                    <th>OBSERVAÇÃO</th>
+                    <th class="no-print">OPÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody id="equipmentBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section" id="section-trainings">
+            <div class="section-header">
+              <h2 class="section-title">TREINAMENTOS</h2>
+              <div class="section-actions no-print">
+                <button class="button primary" type="button" data-add-section="trainings">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  Adicionar Treinamento
+                </button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="compact" aria-label="Tabela de treinamentos">
+                <colgroup>
+                  <col style="width: 84px">
+                  <col style="width: 30%">
+                  <col style="width: 16%">
+                  <col style="width: 16%">
+                  <col style="width: 14%">
+                  <col style="width: 20%">
+                  <col style="width: 92px">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>ITEM</th>
+                    <th>TREINAMENTO</th>
+                    <th>RESPONSÁVEL</th>
+                    <th>QUANDO</th>
+                    <th>STATUS</th>
+                    <th>OBSERVAÇÃO</th>
+                    <th class="no-print">OPÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody id="trainingsBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <p class="footer-note"><span>Dados salvos automaticamente no navegador.</span><span>Use Exportar JSON para criar um backup completo de perfis, pastas e planos.</span></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <section class="modal hidden" id="profileModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="profileModalTitle">Editar Perfil</h2>
+        <button class="button icon-only" type="button" data-close-modal="profileModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="profileForm">
+        <input type="hidden" id="profileIdInput">
+        <div class="modal-grid">
+          <label class="field">Nome completo
+            <input type="text" id="profileNameInput" required placeholder="Nome completo">
+          </label>
+          <label class="field">Cargo / Função
+            <input type="text" id="profileRoleInput" placeholder="Técnico de Segurança">
+          </label>
+        </div>
+        <div class="modal-grid">
+          <label class="field">Empresa / Consultoria
+            <input type="text" id="profileCompanyInput" placeholder="Nome da empresa">
+          </label>
+          <label class="field">E-mail do login
+            <input type="email" id="profileEmailDisplayInput" readonly>
+          </label>
+        </div>
+        <label class="field">Cor do avatar
+          <div class="color-palette" id="profileColorPalette"></div>
+        </label>
+        <label class="field">Foto de perfil
+          <input type="file" id="profilePhotoInput" accept="image/*">
+        </label>
+        <div class="photo-preview" id="profilePhotoPreview"></div>
+        <div class="photo-adjuster hidden" id="profilePhotoAdjuster">
+          <div class="photo-adjuster-head">
+            <div>
+              <strong>Ajustar foto</strong>
+              <span>Arraste a imagem e use o zoom para enquadrar o rosto.</span>
+            </div>
+          </div>
+          <div class="photo-crop-shell">
+            <div class="photo-crop-stage">
+              <canvas id="profilePhotoCanvas" width="320" height="320" aria-label="Ajuste da foto de perfil"></canvas>
+            </div>
+            <div class="photo-crop-controls">
+              <label>Dimensionar foto
+                <input type="range" id="profilePhotoZoomInput" min="100" max="300" value="100">
+              </label>
+              <span class="photo-crop-hint">A área clara representa o recorte usado no avatar.</span>
+              <div class="photo-crop-buttons">
+                <button class="button" type="button" id="profilePhotoResetBtn">Centralizar</button>
+                <button class="button" type="button" id="profilePhotoCancelBtn">Cancelar ajuste</button>
+                <button class="button primary" type="button" id="profilePhotoApplyBtn">Aplicar foto</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions split">
+          <button class="button icon-only danger hidden" type="button" id="profileDeleteBtn" title="Excluir perfil" aria-label="Excluir perfil">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4c0-1 .7-2 2-2h4c1.3 0 2 1 2 2v2"/><path d="M19 6l-1 14c-.1 1.1-.9 2-2 2H8c-1.1 0-1.9-.9-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+          <div class="modal-action-group">
+            <button class="button" type="button" data-close-modal="profileModal">Cancelar</button>
+            <button class="button primary" type="submit">Salvar Perfil</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="settingsModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Configurações</h2>
+        <button class="button icon-only" type="button" data-close-modal="settingsModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="settings-list">
+        <div class="settings-card">
+          <strong>Usuário conectado</strong>
+          <span id="settingsUserEmail">-</span>
+        </div>
+        <button class="button" type="button" id="settingsChangePasswordBtn">Alterar Senha</button>
+        <button class="button" type="button" id="settingsLogBtn">Consultar Log</button>
+        <button class="button danger" type="button" id="settingsLogoutBtn">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          Sair do sistema
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="button" type="button" data-close-modal="settingsModal">Fechar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="logModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Log do sistema</h2>
+        <button class="button icon-only" type="button" data-close-modal="logModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="activity-log-panel">
+        <div class="activity-log-head">
+          <div>
+            <h3>Exclusões e acessos restritos</h3>
+            <span>Mostra quem apagou perfil, pasta ou plano e tentativas bloqueadas do modo somente leitura.</span>
+          </div>
+          <button class="button" type="button" id="refreshLogBtn">Atualizar</button>
+        </div>
+        <div class="activity-log-list" id="activityLogList"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="button" type="button" data-close-modal="logModal">Fechar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="folderModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="folderModalTitle">Nova Pasta</h2>
+        <button class="button icon-only" type="button" data-close-modal="folderModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="folderForm">
+        <input type="hidden" id="folderIdInput">
+        <label class="field">Nome da pasta
+          <input type="text" id="folderNameInput" required placeholder="Nome da pasta">
+        </label>
+        <label class="field">Cor da pasta
+          <div class="color-palette" id="folderColorPalette"></div>
+        </label>
+        <div class="modal-actions">
+          <button class="button" type="button" data-close-modal="folderModal">Cancelar</button>
+          <button class="button primary" type="submit">Salvar Pasta</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="planModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Novo Plano de Ação</h2>
+        <button class="button icon-only" type="button" data-close-modal="planModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="planForm">
+        <label class="field">Nome do plano
+          <input type="text" id="planNameInput" required placeholder="Plano de Ação - Empresa X - PGR 2026">
+        </label>
+        <div class="modal-grid">
+          <label class="field">Empresa / cliente
+            <input type="text" id="planCompanyInput" required placeholder="Empresa X">
+          </label>
+          <label class="field">Tipo de documento
+            <select id="planDocumentTypeInput">
+              <option value="PGR">PGR</option>
+              <option value="PCMSO">PCMSO</option>
+              <option value="LTCAT">LTCAT</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">Pasta de destino
+          <select id="planFolderInput"></select>
+        </label>
+        <label class="field">Como iniciar
+          <select id="planTemplateInput">
+            <option value="template">Carregar template padrão</option>
+            <option value="blank">Iniciar do zero</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button class="button" type="button" data-close-modal="planModal">Cancelar</button>
+          <button class="button primary" type="submit">Criar e Abrir</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="passwordModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Alterar senha</h2>
+        <button class="button icon-only" type="button" data-close-modal="passwordModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="passwordForm">
+        <label class="field" id="currentPasswordField">Confirmar senha atual
+          <span class="password-control">
+            <input type="password" id="currentPasswordInput" autocomplete="current-password" placeholder="Digite sua senha atual">
+            <button class="password-toggle" type="button" data-toggle-password="currentPasswordInput" aria-label="Mostrar senha atual" title="Mostrar senha">
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2.2-2.4 4.9-3.6 8-3.6s5.8 1.2 8 3.6"/><path d="M7 18l1.2-2.1"/><path d="M12 19v-2.5"/><path d="M17 18l-1.2-2.1"/></svg>
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </span>
+        </label>
+        <label class="field">Nova senha
+          <span class="password-control">
+            <input type="password" id="newPasswordInput" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+            <button class="password-toggle" type="button" data-toggle-password="newPasswordInput" aria-label="Mostrar nova senha" title="Mostrar senha">
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2.2-2.4 4.9-3.6 8-3.6s5.8 1.2 8 3.6"/><path d="M7 18l1.2-2.1"/><path d="M12 19v-2.5"/><path d="M17 18l-1.2-2.1"/></svg>
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </span>
+        </label>
+        <label class="field">Confirmar nova senha
+          <span class="password-control">
+            <input type="password" id="confirmPasswordInput" required minlength="6" autocomplete="new-password" placeholder="Repita a nova senha">
+            <button class="password-toggle" type="button" data-toggle-password="confirmPasswordInput" aria-label="Mostrar confirmação da nova senha" title="Mostrar senha">
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2.2-2.4 4.9-3.6 8-3.6s5.8 1.2 8 3.6"/><path d="M7 18l1.2-2.1"/><path d="M12 19v-2.5"/><path d="M17 18l-1.2-2.1"/></svg>
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </span>
+        </label>
+        <div class="auth-message" id="passwordMessage"></div>
+        <div class="modal-actions">
+          <button class="button" type="button" data-close-modal="passwordModal">Cancelar</button>
+          <button class="button primary" type="submit">Salvar senha</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="modal hidden" id="switchUserModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="switchUserTitle">Confirmar senha</h2>
+        <button class="button icon-only" type="button" data-close-modal="switchUserModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="switchUserForm">
+        <label class="field">E-mail
+          <input type="email" id="switchUserEmailInput" readonly>
+        </label>
+        <label class="field">Senha deste perfil
+          <input type="password" id="switchUserPasswordInput" required autocomplete="current-password" placeholder="Digite sua senha">
+        </label>
+        <div class="auth-message" id="switchUserMessage"></div>
+        <div class="modal-actions">
+          <button class="button" type="button" data-close-modal="switchUserModal">Cancelar</button>
+          <button class="button primary" type="submit">Confirmar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <div class="rich-toolbar no-print" id="richToolbar" aria-label="Ferramentas de formatação">
+    <button class="rich-toolbar-drag" type="button" data-rich-toolbar-drag title="Arraste para mover a barra. Clique duas vezes para voltar ao automático." aria-label="Mover barra de edição">&#8942;&#8942;</button>
+    <select id="richBlockSelect" title="Estilo do texto">
+      <option value="">Texto</option>
+      <option value="p">Parágrafo</option>
+      <option value="h3">Título</option>
+      <option value="h4">Subtítulo</option>
+    </select>
+    <button type="button" data-rich-command="bold" title="Negrito">B</button>
+    <button type="button" data-rich-command="italic" title="Itálico"><em>I</em></button>
+    <button type="button" data-rich-command="underline" title="Sublinhado"><u>U</u></button>
+    <span class="toolbar-separator" aria-hidden="true"></span>
+    <button type="button" data-rich-command="insertUnorderedList" title="Lista com marcadores">•</button>
+    <button type="button" data-rich-command="insertOrderedList" title="Lista numerada">1.</button>
+    <button type="button" data-rich-command="justifyLeft" title="Alinhar à esquerda">≡</button>
+    <button type="button" data-rich-command="justifyCenter" title="Centralizar">≣</button>
+    <select id="richSizeSelect" title="Tamanho da fonte">
+      <option value="">Tamanho</option>
+      <option value="2">Pequeno</option>
+      <option value="3">Normal</option>
+      <option value="5">Grande</option>
+    </select>
+    <span class="toolbar-separator" aria-hidden="true"></span>
+    <button class="color-chip" type="button" data-rich-color="#0f172a" style="background:#0f172a" title="Texto escuro" aria-label="Texto escuro"></button>
+    <button class="color-chip" type="button" data-rich-color="#1d4ed8" style="background:#1d4ed8" title="Texto azul" aria-label="Texto azul"></button>
+    <button class="color-chip" type="button" data-rich-color="#991b1b" style="background:#991b1b" title="Texto vermelho" aria-label="Texto vermelho"></button>
+    <button class="color-chip" type="button" data-rich-color="#166534" style="background:#166534" title="Texto verde" aria-label="Texto verde"></button>
+    <button type="button" id="richImageBtn" title="Inserir imagem">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+    </button>
+    <button type="button" data-rich-clear-format title="Limpar formatação">Tx</button>
+    <button type="button" data-rich-clear title="Limpar conteúdo do campo">Limpar</button>
+  </div>
+  <input id="richImageInput" type="file" accept="image/*" hidden>
+
+  <div class="context-menu hidden no-print" id="folderContextMenu">
+    <button type="button" data-folder-context="rename">Renomear</button>
+    <button type="button" data-folder-context="duplicate">Duplicar</button>
+    <button type="button" data-folder-context="delete">Excluir</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/storage.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/profiles.js"></script>
+  <script src="./js/folders.js"></script>
+  <script src="./js/plano-acao.js"></script>
+  <script src="./js/plano-acao-editor.js"></script>
+  <script src="./js/plano-acao-export.js"></script>
+  <script src="./js/plano-acao-import.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
