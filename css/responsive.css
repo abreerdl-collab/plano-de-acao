@@ -1,0 +1,1043 @@
+/* Ajustes responsivos para desktop compacto, tablet, mobile e impressao. */
+
+@media (max-width: 760px) {
+      .app-selector-shell {
+        width: min(100% - 20px, 1080px);
+        padding-top: 14px;
+      }
+
+      .app-selector-topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .app-selector-user {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .app-selector-intro {
+        padding: 38px 0 24px;
+      }
+
+      .app-selector-intro h1 {
+        font-size: 28px;
+      }
+
+      .app-selector-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .app-choice-card {
+        min-height: 220px;
+      }
+    }
+
+@media (max-width: 1180px) {
+      .shell {
+        width: calc(100% - 24px);
+      }
+
+      .dashboard {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar-actions {
+        justify-content: flex-start;
+      }
+
+      .toolbar-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+@media (max-width: 900px) {
+      body {
+        min-width: 0;
+      }
+
+      .shell {
+        width: calc(100% - 20px);
+        margin: 10px auto 28px;
+      }
+
+      .app-title {
+        padding: 34px 8px 18px;
+      }
+
+      .app-title h1 {
+        font-size: 28px;
+        line-height: 1.15;
+      }
+
+      .app-title p {
+        font-size: 14px;
+      }
+
+      .auth-panel {
+        padding: 18px;
+        border-radius: 10px;
+      }
+
+      .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .profile-card,
+      .new-profile-card {
+        min-height: auto;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 14px;
+      }
+
+      .active-profile {
+        width: 100%;
+      }
+
+      .active-profile > div {
+        min-width: 0;
+      }
+
+      .topbar-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .topbar-actions .button,
+      .editor-title input {
+        width: 100%;
+      }
+
+      .explorer-layout {
+        display: block;
+        min-height: auto;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 14px;
+      }
+
+      .folder-list {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scroll-snap-type: x proximity;
+      }
+
+      .folder-item {
+        min-width: 188px;
+        scroll-snap-align: start;
+      }
+
+      .plans-area {
+        padding: 14px;
+      }
+
+      .plans-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .plans-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .plan-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .plan-actions .button,
+      .plan-actions select {
+        width: 100%;
+      }
+
+      .editor-title {
+        width: 100%;
+      }
+
+      .document-header {
+        padding: 18px 14px;
+      }
+
+      .brand-row {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .document-heading {
+        text-align: left;
+        font-size: 24px;
+      }
+
+      .revision-card {
+        width: 100%;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 14px;
+      }
+
+      .metric {
+        min-height: 96px;
+        padding: 12px;
+      }
+
+      .metric-value {
+        font-size: 24px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+
+      .toolbar-filters {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .toolbar .button {
+        min-height: 42px;
+        width: 100%;
+      }
+
+      .template-action-field {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .bulkbar {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 14px;
+      }
+
+      .bulkbar select,
+      .bulkbar .button,
+      .selection-pill {
+        width: 100%;
+      }
+
+      .content {
+        padding: 0 14px 22px;
+      }
+
+      .section {
+        margin-top: 18px;
+      }
+
+      .section-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .section-actions .button {
+        width: 100%;
+      }
+
+      .modal {
+        padding: 10px;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-height: calc(100dvh - 20px);
+        padding: 16px;
+      }
+
+      .modal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .modal-actions.split {
+        display: flex;
+      }
+
+      .modal-action-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .photo-preview {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .photo-crop-shell {
+        align-items: stretch;
+      }
+
+      .photo-crop-stage {
+        width: min(100%, 280px);
+      }
+    }
+
+@media (max-width: 760px) {
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      table,
+      table.compact,
+      thead,
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      tbody tr {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      tbody tr:nth-child(even),
+      tbody tr:hover {
+        background: #fff;
+      }
+
+      tbody td {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 10px;
+      }
+
+      tbody td:last-child {
+        border-bottom: 0;
+      }
+
+      tbody td::before {
+        content: "";
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      #section-actions tbody td:nth-child(1)::before { content: "Item"; }
+      #section-actions tbody td:nth-child(2)::before { content: "Acao recomendada"; }
+      #section-actions tbody td:nth-child(3)::before { content: "Responsavel"; }
+      #section-actions tbody td:nth-child(4)::before { content: "Quando"; }
+      #section-actions tbody td:nth-child(5)::before { content: "Prioridade"; }
+      #section-actions tbody td:nth-child(6)::before { content: "Status"; }
+      #section-actions tbody td:nth-child(7)::before { content: "Observacao"; }
+      #section-actions tbody td:nth-child(8)::before { content: "Opcoes"; }
+
+      #section-equipment tbody td:nth-child(1)::before { content: "Item"; }
+      #section-equipment tbody td:nth-child(2)::before { content: "Descricao"; }
+      #section-equipment tbody td:nth-child(3)::before { content: "Responsavel"; }
+      #section-equipment tbody td:nth-child(4)::before { content: "Status"; }
+      #section-equipment tbody td:nth-child(5)::before { content: "Observacao"; }
+      #section-equipment tbody td:nth-child(6)::before { content: "Opcoes"; }
+
+      #section-trainings tbody td:nth-child(1)::before { content: "Item"; }
+      #section-trainings tbody td:nth-child(2)::before { content: "Treinamento"; }
+      #section-trainings tbody td:nth-child(3)::before { content: "Responsavel"; }
+      #section-trainings tbody td:nth-child(4)::before { content: "Quando"; }
+      #section-trainings tbody td:nth-child(5)::before { content: "Status"; }
+      #section-trainings tbody td:nth-child(6)::before { content: "Observacao"; }
+      #section-trainings tbody td:nth-child(7)::before { content: "Opcoes"; }
+
+      tbody td.empty-row::before {
+        display: none;
+      }
+
+      .item-cell,
+      .item-cell.no-checkbox {
+        grid-template-columns: 28px minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .item-cell:not(.no-checkbox) {
+        grid-template-columns: 24px 28px minmax(0, 1fr);
+      }
+
+      .drag-handle {
+        display: none;
+      }
+
+      .row-check {
+        margin-top: 0;
+      }
+
+      .table-input,
+      .table-select,
+      .rich-editor,
+      .when-editor {
+        min-height: 42px;
+        border-color: var(--line);
+        background: #fff;
+      }
+
+      .rich-editor,
+      .when-editor {
+        min-height: 92px;
+      }
+
+      .when-cell {
+        grid-template-columns: minmax(0, 1fr) 44px;
+      }
+
+      .date-picker {
+        width: 44px;
+        height: 42px;
+      }
+
+      .row-actions {
+        justify-content: flex-start;
+      }
+
+      .row-actions .button.icon-only {
+        width: 42px;
+        height: 42px;
+      }
+
+      .last-edit {
+        text-align: left;
+      }
+
+      .rich-toolbar {
+        max-width: calc(100vw - 16px);
+        flex-wrap: wrap;
+      }
+    }
+
+@media (max-width: 520px) {
+      .shell {
+        width: calc(100% - 14px);
+        margin-top: 7px;
+      }
+
+      .app-title h1 {
+        font-size: 25px;
+      }
+
+      .button {
+        min-height: 42px;
+        height: auto;
+        padding: 8px 10px;
+        white-space: normal;
+      }
+
+      .topbar-actions,
+      .plan-actions,
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .document-heading {
+        font-size: 21px;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      .metric {
+        min-height: 82px;
+      }
+
+      .plans-area,
+      .sidebar,
+      .document-header,
+      .dashboard,
+      .toolbar,
+      .bulkbar,
+      .content {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .folder-item {
+        min-width: 166px;
+      }
+    }
+
+@media (max-width: 1024px) {
+      html,
+      body {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        overflow-x: hidden;
+      }
+
+      .screen {
+        min-height: 100dvh;
+      }
+
+      .shell {
+        width: 100%;
+        margin: 0;
+      }
+
+      .auth-screen .shell,
+      .profile-screen .shell {
+        width: min(100%, 520px);
+        margin: 0 auto;
+        padding: 0 14px 28px;
+      }
+
+      .folder-screen .shell,
+      .editor-screen .shell {
+        width: 100%;
+      }
+
+      .explorer-shell,
+      .document-shell {
+        min-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .app-title {
+        padding-top: 28px;
+      }
+
+      .auth-panel,
+      .profile-card,
+      .new-profile-card,
+      .plan-card,
+      .metric,
+      .modal-card {
+        border-radius: 8px;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .active-profile strong,
+      .active-profile span,
+      .plan-title,
+      .profile-name {
+        overflow-wrap: anywhere;
+      }
+
+      .folder-list {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .folder-list::-webkit-scrollbar {
+        display: none;
+      }
+
+      .folder-item {
+        border-color: var(--line);
+        background: #fff;
+      }
+
+      .folder-item.is-active {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+
+      .folder-item.is-active .folder-count {
+        background: rgba(255, 255, 255, 0.24);
+        color: #fff;
+      }
+
+      .plans-area {
+        min-height: calc(100dvh - 210px);
+      }
+
+      .plan-card {
+        cursor: default;
+      }
+
+      .document-header,
+      .dashboard,
+      .toolbar,
+      .bulkbar,
+      .content {
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      table,
+      table.compact,
+      thead,
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+        min-width: 0 !important;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      tbody tr {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      tbody tr:nth-child(even),
+      tbody tr:hover {
+        background: #fff;
+      }
+
+      tbody td {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 10px;
+      }
+
+      tbody td:last-child {
+        border-bottom: 0;
+      }
+
+      tbody td::before {
+        content: "";
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      #section-actions tbody td:nth-child(1)::before { content: "Item"; }
+      #section-actions tbody td:nth-child(2)::before { content: "Acao recomendada"; }
+      #section-actions tbody td:nth-child(3)::before { content: "Responsavel"; }
+      #section-actions tbody td:nth-child(4)::before { content: "Quando"; }
+      #section-actions tbody td:nth-child(5)::before { content: "Prioridade"; }
+      #section-actions tbody td:nth-child(6)::before { content: "Status"; }
+      #section-actions tbody td:nth-child(7)::before { content: "Observacao"; }
+      #section-actions tbody td:nth-child(8)::before { content: "Opcoes"; }
+
+      #section-equipment tbody td:nth-child(1)::before { content: "Item"; }
+      #section-equipment tbody td:nth-child(2)::before { content: "Descricao"; }
+      #section-equipment tbody td:nth-child(3)::before { content: "Responsavel"; }
+      #section-equipment tbody td:nth-child(4)::before { content: "Status"; }
+      #section-equipment tbody td:nth-child(5)::before { content: "Observacao"; }
+      #section-equipment tbody td:nth-child(6)::before { content: "Opcoes"; }
+
+      #section-trainings tbody td:nth-child(1)::before { content: "Item"; }
+      #section-trainings tbody td:nth-child(2)::before { content: "Treinamento"; }
+      #section-trainings tbody td:nth-child(3)::before { content: "Responsavel"; }
+      #section-trainings tbody td:nth-child(4)::before { content: "Quando"; }
+      #section-trainings tbody td:nth-child(5)::before { content: "Status"; }
+      #section-trainings tbody td:nth-child(6)::before { content: "Observacao"; }
+      #section-trainings tbody td:nth-child(7)::before { content: "Opcoes"; }
+
+      tbody td.empty-row::before {
+        display: none;
+      }
+
+      .drag-handle {
+        display: none;
+      }
+
+      .table-input,
+      .table-select,
+      .rich-editor,
+      .when-editor {
+        min-height: 42px;
+        border-color: var(--line);
+        background: #fff;
+      }
+
+      .rich-editor,
+      .when-editor {
+        min-height: 92px;
+      }
+    }
+
+@media (max-width: 1024px) {
+      html[data-theme="dark"] .folder-item,
+      html[data-theme="dark"] tbody tr,
+      html[data-theme="dark"] tbody tr:nth-child(even),
+      html[data-theme="dark"] tbody tr:hover,
+      html[data-theme="dark"] .table-input,
+      html[data-theme="dark"] .table-select,
+      html[data-theme="dark"] .rich-editor,
+      html[data-theme="dark"] .when-editor {
+        background: var(--surface);
+      }
+
+      html[data-theme="dark"] .folder-item.is-active {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #ffffff;
+      }
+
+      html[data-theme="dark"] .table-input:hover,
+      html[data-theme="dark"] .table-select:hover,
+      html[data-theme="dark"] .rich-editor:hover,
+      html[data-theme="dark"] .rich-editor:focus,
+      html[data-theme="dark"] .when-editor:hover,
+      html[data-theme="dark"] .when-editor:focus {
+        background: #0b1220;
+      }
+    }
+
+@media print {
+      @page {
+        size: A4 landscape;
+        margin: 10mm;
+      }
+
+      body {
+        min-width: 0;
+        background: #fff;
+        color: #000;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .no-print,
+      .profile-screen,
+      .folder-screen,
+      .modal,
+      .rich-toolbar,
+      .context-menu {
+        display: none !important;
+      }
+
+      .editor-screen {
+        display: block !important;
+      }
+
+      .shell {
+        width: 100%;
+        margin: 0;
+      }
+
+      .document-shell {
+        border: 0;
+        box-shadow: none;
+      }
+
+      .document-header,
+      .dashboard,
+      .content {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .brand-row {
+        grid-template-columns: 1fr 1.3fr 1fr;
+      }
+
+      .dashboard {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        background: #fff;
+      }
+
+      .metric {
+        min-height: 74px;
+        padding: 8px;
+      }
+
+      .metric-value {
+        font-size: 20px;
+      }
+
+      .table-wrap {
+        overflow: visible;
+        border-color: #8fa2bb;
+      }
+
+      table,
+      table.compact {
+        min-width: 0;
+        table-layout: fixed;
+        page-break-inside: auto;
+      }
+
+      thead th {
+        position: static;
+        font-size: 9px;
+        padding: 6px;
+      }
+
+      tbody td {
+        padding: 5px;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      .item-cell,
+      .item-cell.no-checkbox {
+        display: block;
+      }
+
+      .item-number {
+        min-width: 20px;
+        height: 20px;
+        font-size: 11px;
+      }
+
+      .table-input,
+      .table-select,
+      label.field input,
+      .editable-text,
+      .rich-editor,
+      .when-editor {
+        border: 0;
+        padding: 0;
+        background: transparent !important;
+        color: #000 !important;
+        outline: 0;
+        box-shadow: none;
+      }
+
+      .rich-editor,
+      .when-editor {
+        min-height: auto;
+        overflow: visible;
+      }
+
+      .rt-image-wrap {
+        resize: none;
+        border-color: #cbd5e1;
+        page-break-inside: avoid;
+      }
+    }
+
+@media print {
+      body.printing-executive .screen,
+      body.printing-executive .modal,
+      body.printing-executive .rich-toolbar,
+      body.printing-executive .context-menu {
+        display: none !important;
+      }
+
+      body.printing-executive .print-report {
+        display: block !important;
+        color: #0f172a;
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+
+      .pdf-cover {
+        display: grid;
+        grid-template-columns: 64px minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: center;
+        border-bottom: 3px solid #2563eb;
+        padding-bottom: 12px;
+        margin-bottom: 14px;
+      }
+
+      .pdf-logo {
+        width: 54px;
+        height: 54px;
+        border-radius: 8px;
+        background: #2563eb;
+      }
+
+      .pdf-kicker {
+        margin: 0 0 2px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .pdf-title {
+        margin: 0;
+        color: #0f172a;
+        font-size: 20px;
+        letter-spacing: 0;
+      }
+
+      .pdf-subtitle {
+        margin: 3px 0 0;
+        color: #334155;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .pdf-date {
+        justify-self: end;
+        color: #334155;
+        font-size: 10px;
+        font-weight: 800;
+        text-align: right;
+      }
+
+      .pdf-meta-grid,
+      .pdf-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .pdf-box {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 7px 8px;
+        background: #f8fafc;
+      }
+
+      .pdf-label {
+        display: block;
+        color: #64748b;
+        font-size: 8px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .pdf-value {
+        display: block;
+        margin-top: 2px;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .pdf-description {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px 10px;
+        margin-bottom: 12px;
+        color: #334155;
+        font-size: 10px;
+        line-height: 1.4;
+      }
+
+      .pdf-section-title {
+        margin: 14px 0 6px;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        page-break-inside: auto;
+      }
+
+      .pdf-table th,
+      .pdf-table td {
+        border: 1px solid #cbd5e1;
+        padding: 5px;
+        vertical-align: top;
+        font-size: 8.5px;
+        line-height: 1.28;
+      }
+
+      .pdf-table th {
+        background: #eaf2ff;
+        color: #0f172a;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .pdf-table tr {
+        page-break-inside: avoid;
+      }
+
+      .pdf-rich,
+      .pdf-rich * {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+
+      .pdf-rich img,
+      .pdf-table img {
+        max-width: 100%;
+        height: auto;
+        page-break-inside: avoid;
+      }
+
+      .pdf-badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 2px 6px;
+        font-size: 8px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .pdf-footer {
+        margin-top: 10px;
+        color: #64748b;
+        font-size: 8px;
+        text-align: right;
+      }
+    }
