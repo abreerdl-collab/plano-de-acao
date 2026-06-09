@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SATS</title>
+  <link rel="icon" id="satsFavicon" type="image/png">
   <script>
     (function () {
       try {
@@ -510,6 +511,75 @@
       padding-bottom: 36px;
     }
 
+    .improvement-box {
+      margin-bottom: 36px;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .improvement-box-head,
+    .improvement-suggestion-head,
+    .improvement-suggestion-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .improvement-box h2,
+    .improvement-box h3 {
+      margin: 0;
+    }
+
+    .improvement-form,
+    .improvement-owner-panel,
+    .improvement-list,
+    .improvement-suggestion {
+      display: grid;
+      gap: 10px;
+    }
+
+    .improvement-form textarea {
+      width: 100%;
+      min-height: 104px;
+      resize: vertical;
+    }
+
+    .improvement-owner-panel {
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .improvement-suggestion {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-soft);
+    }
+
+    .improvement-suggestion.is-resolved {
+      opacity: 0.68;
+    }
+
+    .improvement-suggestion-text {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .improvement-suggestion-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
     .profile-card,
     .new-profile-card,
     .plan-card,
@@ -1009,6 +1079,43 @@
       align-items: center;
       gap: 12px;
       min-width: 0;
+    }
+
+    .company-logo-control {
+      position: relative;
+      display: grid;
+      gap: 5px;
+      flex: 0 0 auto;
+    }
+
+    .company-logo-preview {
+      width: 64px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .company-logo-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .company-logo-actions {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .company-logo-actions .button {
+      min-height: 26px;
+      padding: 3px 6px;
+      font-size: 10px;
     }
 
     .logo-mark {
@@ -2770,6 +2877,11 @@
         align-items: flex-start;
       }
 
+      .company-logo-preview {
+        width: 58px;
+        height: 48px;
+      }
+
       .metric {
         min-height: 82px;
       }
@@ -4215,6 +4327,23 @@
         </button>
       </div>
       <section class="profile-grid" id="profileGrid" aria-label="Perfis cadastrados"></section>
+      <section class="improvement-box" id="improvementBox" aria-labelledby="improvementBoxTitle">
+        <div class="improvement-box-head">
+          <div>
+            <h2 id="improvementBoxTitle">Caixinha de melhorias</h2>
+            <p class="muted">Envie uma sugestão para ajudar a evoluir o SATS.</p>
+          </div>
+        </div>
+        <form class="improvement-form" id="improvementForm">
+          <label for="improvementText">Sua sugestão</label>
+          <textarea id="improvementText" maxlength="3000" required placeholder="Conte o que pode melhorar..."></textarea>
+          <div><button class="button primary" type="submit">Enviar sugestão</button></div>
+        </form>
+        <div class="improvement-owner-panel" id="improvementOwnerPanel" hidden>
+          <h3>Sugestões recebidas</h3>
+          <div class="improvement-list" id="improvementList"></div>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -4285,7 +4414,16 @@
         <header class="document-header">
           <div class="brand-row">
             <div class="brand">
-              <span class="logo-mark" aria-hidden="true"></span>
+              <div class="company-logo-control" id="companyLogoControl">
+                <div class="company-logo-preview" id="companyLogoPreview" hidden>
+                  <img class="company-logo-image" id="companyLogoImagePreview" alt="Logo da empresa" hidden>
+                </div>
+                <div class="company-logo-actions no-print">
+                  <button class="button" type="button" id="companyLogoUploadBtn" title="Anexar logo da empresa">Anexar</button>
+                  <button class="button danger" type="button" id="companyLogoRemoveBtn" title="Remover logo da empresa" hidden>Remover</button>
+                </div>
+                <input id="companyLogoInput" type="file" accept="image/png,image/jpeg,image/jpg" hidden>
+              </div>
               <div class="editable-text company-name" contenteditable="true" spellcheck="true" data-meta="companyLogo" aria-label="Logo ou nome da empresa"></div>
             </div>
             <h1 class="document-heading">CRONOGRAMA DE AÇÕES</h1>
@@ -4395,6 +4533,10 @@
               </label>
             </div>
             <div class="toolbar-export-group">
+              <button class="button" type="button" id="addValidityBtn">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M3 11h18"/></svg>
+                Adicionar vigência
+              </button>
               <button class="button" type="button" id="printBtn">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
                 Exportar PDF
@@ -4739,6 +4881,40 @@
     </div>
   </section>
 
+  <section class="modal hidden" id="validityModal" aria-modal="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Adicionar vigência</h2>
+        <button class="button icon-only" type="button" data-close-modal="validityModal" aria-label="Fechar">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="validityForm">
+        <label class="field">Mês inicial
+          <select id="validityMonthInput" required>
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </label>
+        <p class="muted">A vigência substituirá todos os valores da coluna “Quando” em ações e treinamentos.</p>
+        <div class="modal-actions">
+          <button class="button" type="button" data-close-modal="validityModal">Cancelar</button>
+          <button class="button primary" type="submit">Aplicar vigência</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
   <section class="modal hidden" id="passwordModal" aria-modal="true" role="dialog">
     <div class="modal-card">
       <div class="modal-head">
@@ -4872,7 +5048,7 @@
       const THEME_USER_PREFIX = "planoDeAcaoSST.theme.user.";
       const MAX_ACTIVITY_LOG = 500;
       const RESTRICTED_ATTEMPT_ACTION = "Tentativa de acesso restrito";
-      const LOGGED_ACTIVITY_ACTIONS = new Set(["Excluiu perfil", "Excluiu pasta", "Excluiu plano", RESTRICTED_ATTEMPT_ACTION]);
+      const LOGGED_ACTIVITY_ACTIONS = new Set(["Excluiu perfil", "Excluiu pasta", "Excluiu plano", "Copiou plano", "Aplicou vigência", RESTRICTED_ATTEMPT_ACTION]);
       const DEFAULT_FOLDER_ID = "default-folder";
       const PRIORITIES = ["Alta", "Média", "Baixa"];
       const STATUSES = ["Não iniciado", "Em andamento", "Concluído", "Cancelado"];
@@ -4888,6 +5064,7 @@
       const SYNC_LEADER_HEARTBEAT_MS = 15 * 1000;
       const DEFAULT_DESCRIPTION = "A execução de cada uma das ações propostas configura um fator relevante para a redução dos riscos identificados, por isso deve ser considerado os responsáveis para que seja possível a aplicação de um ciclo de melhoria contínua (PDCA), onde após a realização de cada ação seja realizada uma nova análise dos riscos trabalhados e então atualizado o inventário de riscos.";
       const RESTRICTED_ADMIN_EMAILS = new Set(["administrativo@protege.med.br"]);
+      const IMPROVEMENTS_OWNER_EMAIL = "abner.l@outlook.com";
 
       console.info("[APP_VERSION]", APP_VERSION);
 
@@ -4928,6 +5105,7 @@
       let pendingHiddenAdds = new Set();
       let pendingHiddenRemoves = new Set();
       let pendingFullSave = false;
+      let pendingImprovementsSave = false;
       let pendingActivityIds = new Set();
       let onlineUserIds = new Set();
       let selectedActions = new Set();
@@ -4963,6 +5141,10 @@
         folderScreen: document.getElementById("folderScreen"),
         editorScreen: document.getElementById("editorScreen"),
         profileGrid: document.getElementById("profileGrid"),
+        improvementForm: document.getElementById("improvementForm"),
+        improvementText: document.getElementById("improvementText"),
+        improvementOwnerPanel: document.getElementById("improvementOwnerPanel"),
+        improvementList: document.getElementById("improvementList"),
         activeProfileBadge: document.getElementById("activeProfileBadge"),
         folderList: document.getElementById("folderList"),
         plansGrid: document.getElementById("plansGrid"),
@@ -5035,6 +5217,7 @@
           deletedPlans: snapshot && snapshot.deletedPlanIds ? snapshot.deletedPlanIds.length : pendingPlanDeletes.size,
           deletedFolders: snapshot && snapshot.deletedFolderIds ? snapshot.deletedFolderIds.length : pendingFolderDeletes.size,
           deletedRows: snapshot && snapshot.deletedRows ? snapshot.deletedRows.length : pendingRowDeletes.size,
+          improvements: snapshot ? !!snapshot.improvements : pendingImprovementsSave,
           activities: snapshot && snapshot.activityIds ? snapshot.activityIds.length : pendingActivityIds.size,
           hiddenAdds: snapshot && snapshot.hiddenAdds ? snapshot.hiddenAdds.length : pendingHiddenAdds.size,
           hiddenRemoves: snapshot && snapshot.hiddenRemoves ? snapshot.hiddenRemoves.length : pendingHiddenRemoves.size
@@ -5271,6 +5454,9 @@
       }
 
       function bindGlobalEvents() {
+        const favicon = document.getElementById("satsFavicon");
+        const satsLogo = document.querySelector(".auth-logo");
+        if (favicon && satsLogo) favicon.href = satsLogo.src;
         els.authForm.addEventListener("submit", handleLogin);
         document.getElementById("forgotPasswordBtn").addEventListener("click", handleForgotPassword);
         document.getElementById("appSelectorLogoutBtn").addEventListener("click", logout);
@@ -5333,6 +5519,8 @@
         });
 
         els.profileGrid.addEventListener("click", handleProfileGridClick);
+        els.improvementForm.addEventListener("submit", submitImprovementSuggestion);
+        els.improvementList.addEventListener("click", handleImprovementListClick);
         els.folderList.addEventListener("click", handleFolderClick);
         els.folderList.addEventListener("dblclick", handleFolderDoubleClick);
         els.folderList.addEventListener("contextmenu", handleFolderContext);
@@ -5368,6 +5556,13 @@
         });
 
         document.getElementById("templateActionSelect").addEventListener("change", applyTemplateChoiceToCurrentPlan);
+        document.getElementById("addValidityBtn").addEventListener("click", openValidityModal);
+        document.getElementById("validityForm").addEventListener("submit", applyValidityToCurrentPlan);
+        document.getElementById("companyLogoUploadBtn").addEventListener("click", () => {
+          if (!blockRestrictedAdminAccess()) document.getElementById("companyLogoInput").click();
+        });
+        document.getElementById("companyLogoRemoveBtn").addEventListener("click", removeCompanyLogo);
+        document.getElementById("companyLogoInput").addEventListener("change", handleCompanyLogoUpload);
         document.getElementById("printBtn").addEventListener("click", exportExecutivePdf);
         document.getElementById("exportRtfBtn").addEventListener("click", exportExecutiveRtf);
         document.getElementById("exportJpegBtn").addEventListener("click", exportExecutiveJpeg);
@@ -6371,6 +6566,7 @@
         activePlanId: null,
         hiddenUserProfileIds: [],
         activityLog: [],
+        improvementSuggestions: [],
         profiles: []
       };
       }
@@ -6406,11 +6602,38 @@
           activePlanId: raw.activePlanId || null,
           hiddenUserProfileIds: Array.isArray(raw.hiddenUserProfileIds) ? raw.hiddenUserProfileIds : [],
           activityLog: normalizeActivityLog(raw.activityLog || raw.activity_log || []),
+          improvementSuggestions: normalizeImprovementSuggestions(raw.improvementSuggestions || raw.improvement_suggestions || []),
           profiles: Array.isArray(raw.profiles) ? raw.profiles : []
         };
 
         appData.profiles = appData.profiles.map(profile => normalizeProfile(profile));
         return appData;
+      }
+
+      function normalizeImprovementSuggestions(entries) {
+        if (!Array.isArray(entries)) return [];
+        return entries
+          .map(entry => ({
+            id: entry.id || createId(),
+            text: String(entry.text || "").trim(),
+            createdAt: entry.createdAt || entry.at || new Date().toISOString(),
+            updatedAt: entry.updatedAt || entry.createdAt || entry.at || new Date().toISOString(),
+            userEmail: String(entry.userEmail || entry.email || ""),
+            userName: String(entry.userName || entry.profileName || ""),
+            userId: String(entry.userId || ""),
+            status: entry.status === "Resolvida" ? "Resolvida" : "Nova"
+          }))
+          .filter(entry => entry.text)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+
+      function mergeImprovementSuggestions(remoteEntries, localEntries) {
+        const merged = new Map();
+        [...normalizeImprovementSuggestions(remoteEntries), ...normalizeImprovementSuggestions(localEntries)].forEach(entry => {
+          const current = merged.get(entry.id);
+          if (!current || new Date(entry.updatedAt) >= new Date(current.updatedAt)) merged.set(entry.id, entry);
+        });
+        return normalizeImprovementSuggestions(Array.from(merged.values()));
       }
 
       function normalizeActivityLog(entries) {
@@ -6550,6 +6773,7 @@
           activeProfileId: null,
           activeFolderId: DEFAULT_FOLDER_ID,
           activePlanId: null,
+          improvementSuggestions: [],
           profiles: [normalizeProfile(profile)]
         };
       }
@@ -6568,6 +6792,8 @@
         const now = new Date().toISOString();
         const meta = {
           companyLogo: options.company || "Nome da Empresa",
+          companyLogoImage: "",
+          companyLogoImageName: "",
           description: DEFAULT_DESCRIPTION,
           documentName: options.documentType || "PGR",
           company: options.company || "Empresa",
@@ -6777,6 +7003,97 @@
           els.profileGrid.appendChild(createCard);
         }
 
+        renderImprovementBox();
+      }
+
+      function isImprovementsOwnerUser() {
+        return normalizeText(currentUser && currentUser.email) === normalizeText(IMPROVEMENTS_OWNER_EMAIL);
+      }
+
+      function renderImprovementBox() {
+        if (!currentUser) return;
+        if (!isImprovementsOwnerUser()) {
+          els.improvementOwnerPanel.hidden = true;
+          els.improvementList.innerHTML = "";
+          return;
+        }
+
+        els.improvementOwnerPanel.hidden = false;
+        const suggestions = normalizeImprovementSuggestions(app.improvementSuggestions);
+        els.improvementList.innerHTML = suggestions.length
+          ? suggestions.map(suggestion => `
+              <article class="improvement-suggestion ${suggestion.status === "Resolvida" ? "is-resolved" : ""}" data-improvement-id="${escapeAttr(suggestion.id)}">
+                <div class="improvement-suggestion-head">
+                  <strong>${escapeHtml(suggestion.status)}</strong>
+                  <span class="improvement-suggestion-meta">${escapeHtml(formatDateTime(suggestion.createdAt))}</span>
+                </div>
+                <p class="improvement-suggestion-text">${escapeHtml(suggestion.text)}</p>
+                <div class="improvement-suggestion-meta">${escapeHtml(suggestion.userName || "Sem perfil")} · ${escapeHtml(suggestion.userEmail || "E-mail não informado")}</div>
+                <div class="improvement-suggestion-actions">
+                  <button class="button" type="button" data-improvement-action="copy">${icons.copy} Copiar</button>
+                  <button class="button" type="button" data-improvement-action="resolve" ${suggestion.status === "Resolvida" ? "disabled" : ""}>Marcar como resolvida</button>
+                </div>
+              </article>
+            `).join("")
+          : '<div class="empty-state">Nenhuma sugestão recebida ainda.</div>';
+      }
+
+      function submitImprovementSuggestion(event) {
+        event.preventDefault();
+        if (!currentUser) return;
+        const text = String(els.improvementText.value || "").trim();
+        if (!text) return;
+        const profile = currentUserOwnProfile();
+        const now = new Date().toISOString();
+        app.improvementSuggestions.unshift({
+          id: createId(),
+          text,
+          createdAt: now,
+          updatedAt: now,
+          userEmail: currentUser.email || "",
+          userName: profile ? profile.name : "",
+          userId: currentUser.id || "",
+          status: "Nova"
+        });
+        els.improvementText.value = "";
+        saveApp({ improvements: true });
+        renderImprovementBox();
+        alert("Sugestão enviada. Obrigado por ajudar a melhorar o SATS!");
+      }
+
+      async function handleImprovementListClick(event) {
+        if (!isImprovementsOwnerUser()) return;
+        const button = event.target.closest("[data-improvement-action]");
+        const card = event.target.closest("[data-improvement-id]");
+        if (!button || !card) return;
+        const suggestion = app.improvementSuggestions.find(item => item.id === card.dataset.improvementId);
+        if (!suggestion) return;
+        if (button.dataset.improvementAction === "copy") {
+          await copyTextToClipboard(suggestion.text);
+          alert("Sugestão copiada.");
+          return;
+        }
+        if (button.dataset.improvementAction === "resolve") {
+          suggestion.status = "Resolvida";
+          suggestion.updatedAt = new Date().toISOString();
+          saveApp({ improvements: true });
+          renderImprovementBox();
+        }
+      }
+
+      async function copyTextToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const field = document.createElement("textarea");
+        field.value = text;
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        document.execCommand("copy");
+        field.remove();
       }
 
       function currentUserOwnProfile() {
@@ -7319,6 +7636,10 @@
                 <option value="">Mover para pasta...</option>
                 ${profile.folders.map(folder => `<option value="${escapeAttr(folder.id)}">${escapeHtml(folder.name)}</option>`).join("")}
               </select>
+              <select data-plan-copy aria-label="Copiar para pasta">
+                <option value="">Copiar para...</option>
+                ${profile.folders.map(folder => `<option value="${escapeAttr(folder.id)}">${escapeHtml(folder.name)}</option>`).join("")}
+              </select>
               <button class="button danger" type="button" data-plan-action="delete">Excluir</button>
             `;
           card.innerHTML = `
@@ -7624,6 +7945,11 @@
 
       function handlePlanMove(event) {
         if (blockRestrictedAdminAccess()) return;
+        const copySelect = event.target.closest("[data-plan-copy]");
+        if (copySelect && copySelect.value) {
+          copyPlanToFolder(copySelect);
+          return;
+        }
         const select = event.target.closest("[data-plan-move]");
         if (!select || !select.value) return;
         const card = select.closest(".plan-card");
@@ -7638,6 +7964,20 @@
           saveApp();
           renderFoldersScreen();
         }
+      }
+
+      function copyPlanToFolder(select) {
+        const card = select.closest(".plan-card");
+        const profile = currentProfile();
+        const plan = profile && profile.plans.find(item => item.id === card.dataset.planId);
+        const destination = profile && profile.folders.find(folder => folder.id === select.value);
+        if (!plan || !destination) return;
+        const copy = duplicatePlanObject(plan, destination.id);
+        profile.plans.push(copy);
+        recordActivity("Copiou plano", `Copiou o plano ${plan.title} para a pasta ${destination.name}.`, { profile, plan: copy });
+        saveApp();
+        renderFoldersScreen();
+        alert(`Plano copiado para "${destination.name}".`);
       }
 
       function handlePlanDragStart(event) {
@@ -7689,7 +8029,7 @@
 
       function renderRestrictedEditorUi() {
         const readOnly = isRestrictedAdminUser();
-        ["templateActionField", "exportJsonBtn", "importJsonBtn", "applyBulkStatus", "deleteSelected"].forEach(id => {
+        ["templateActionField", "addValidityBtn", "companyLogoUploadBtn", "companyLogoRemoveBtn", "exportJsonBtn", "importJsonBtn", "applyBulkStatus", "deleteSelected"].forEach(id => {
           const element = document.getElementById(id);
           if (element) element.classList.toggle("hidden", readOnly);
         });
@@ -7714,6 +8054,112 @@
             field.disabled = readOnly;
           }
         });
+        renderCompanyLogo();
+      }
+
+      function renderCompanyLogo() {
+        const plan = currentPlan();
+        if (!plan) return;
+        const preview = document.getElementById("companyLogoPreview");
+        const image = document.getElementById("companyLogoImagePreview");
+        const removeButton = document.getElementById("companyLogoRemoveBtn");
+        const source = plan.data.meta.companyLogoImage || "";
+        preview.style.display = source ? "grid" : "none";
+        image.hidden = !source;
+        if (source) image.src = source;
+        else image.removeAttribute("src");
+        removeButton.hidden = !source || isRestrictedAdminUser();
+      }
+
+      async function handleCompanyLogoUpload(event) {
+        if (blockRestrictedAdminAccess()) return;
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        if (!file) return;
+        if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
+          alert("Selecione uma imagem PNG ou JPEG.");
+          return;
+        }
+        try {
+          const plan = currentPlan();
+          if (!plan) return;
+          plan.data.meta.companyLogoImage = await compressCompanyLogoFile(file);
+          plan.data.meta.companyLogoImageName = file.name || "logo";
+          touchPlan(plan);
+          saveApp();
+          renderCompanyLogo();
+          markSaved();
+        } catch (error) {
+          console.error(error);
+          alert("Não foi possível processar a logo selecionada.");
+        }
+      }
+
+      function removeCompanyLogo() {
+        if (blockRestrictedAdminAccess()) return;
+        const plan = currentPlan();
+        if (!plan || !plan.data.meta.companyLogoImage) return;
+        plan.data.meta.companyLogoImage = "";
+        plan.data.meta.companyLogoImageName = "";
+        touchPlan(plan);
+        saveApp();
+        renderCompanyLogo();
+        markSaved();
+      }
+
+      function compressCompanyLogoFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const image = new Image();
+            image.onload = () => {
+              const ratio = Math.min(1, 240 / image.naturalWidth, 120 / image.naturalHeight);
+              const width = Math.max(1, Math.round(image.naturalWidth * ratio));
+              const height = Math.max(1, Math.round(image.naturalHeight * ratio));
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              const context = canvas.getContext("2d");
+              context.drawImage(image, 0, 0, width, height);
+              const type = file.type === "image/png" ? "image/png" : "image/jpeg";
+              resolve(canvas.toDataURL(type, 0.82));
+            };
+            image.onerror = reject;
+            image.src = reader.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function openValidityModal() {
+        if (blockRestrictedAdminAccess()) return;
+        document.getElementById("validityMonthInput").value = String(new Date().getMonth());
+        openModal("validityModal");
+      }
+
+      // Aplica a mesma vigência anual nas ações e nos treinamentos.
+      function applyValidityToCurrentPlan(event) {
+        event.preventDefault();
+        if (blockRestrictedAdminAccess()) return;
+        if (!confirm("Aplicar a vigência e substituir todos os valores existentes da coluna Quando?")) return;
+        const plan = currentPlan();
+        const data = currentPlanData();
+        if (!plan || !data) return;
+        const months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+        const month = months[Number(document.getElementById("validityMonthInput").value)] || months[0];
+        const currentYear = new Date().getFullYear();
+        const validity = `${month}/${String(currentYear).slice(-2)}-${month}/${String(currentYear + 1).slice(-2)}`;
+        [...data.actions, ...data.trainings].forEach(row => {
+          row.when = validity;
+          touchRow(row);
+        });
+        touchPlan(plan);
+        recordActivity("Aplicou vigência", `Aplicou a vigência ${validity} no plano ${plan.title}.`, { profile: currentProfile(), plan });
+        saveApp();
+        renderEditorTables();
+        markSaved();
+        closeModal("validityModal");
       }
 
       function handleMetaInput(event) {
@@ -8683,7 +9129,7 @@
           creator: "SATS"
         });
 
-        let y = drawPdfHeader(doc, plan, meta, generatedAt);
+        let y = await drawPdfHeader(doc, plan, meta, generatedAt);
         y = drawPdfMetaGrid(doc, [
           ["Empresa", company],
           ["Documento", documentName],
@@ -8698,21 +9144,29 @@
         addPdfPageFooters(doc);
       }
 
-      function drawPdfHeader(doc, plan, meta, generatedAt) {
+      async function drawPdfHeader(doc, plan, meta, generatedAt) {
         const width = pdfPageWidth(doc);
         const margin = 10;
-        doc.setFillColor(37, 99, 235);
-        doc.roundedRect(margin, 9, 13, 13, 2, 2, "F");
+        let titleX = margin + 18;
+        const logo = meta.companyLogoImage ? await loadPdfImage(meta.companyLogoImage) : null;
+        if (logo) {
+          const fit = fitPdfImage(logo.width, logo.height, 22, 15);
+          doc.addImage(meta.companyLogoImage, pdfImageFormat(meta.companyLogoImage), margin, 9, fit.width, fit.height);
+          titleX = margin + 27;
+        } else {
+          doc.setFillColor(37, 99, 235);
+          doc.roundedRect(margin, 9, 13, 13, 2, 2, "F");
+        }
         doc.setTextColor(15, 23, 42);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
-        doc.text("RELATÓRIO EXECUTIVO", margin + 18, 12.5);
+        doc.text("RELATÓRIO EXECUTIVO", titleX, 12.5);
         doc.setFontSize(17);
-        doc.text("CRONOGRAMA DE AÇÕES SST", margin + 18, 19);
+        doc.text("CRONOGRAMA DE AÇÕES SST", titleX, 19);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8.5);
         doc.setTextColor(51, 65, 85);
-        doc.text(pdfTrim(`${plan.title || "Plano de ação"}${meta.company ? " - " + meta.company : ""}`, 95), margin + 18, 24);
+        doc.text(pdfTrim(`${plan.title || "Plano de ação"}${meta.company ? " - " + meta.company : ""}`, 95), titleX, 24);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
         doc.text("Gerado em", width - margin, 13, { align: "right" });
@@ -9160,9 +9614,11 @@
         const stats = getExecutiveStats(plan);
         const company = meta.company || plan.company || "-";
         const documentName = meta.documentName || plan.documentType || "-";
+        const companyLogoRtf = meta.companyLogoImage ? await rtfImage(meta.companyLogoImage, 1800, 900) : "";
         const chunks = [
           "{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0 Arial;}}{\\colortbl ;\\red15\\green23\\blue42;\\red29\\green78\\blue216;\\red255\\green255\\blue255;\\red219\\green234\\blue254;\\red254\\green226\\blue226;\\red153\\green27\\blue27;\\red254\\green243\\blue199;\\red146\\green64\\blue14;\\red220\\green252\\blue231;\\red22\\green101\\blue52;\\red229\\green231\\blue235;\\red55\\green65\\blue81;\\red203\\green213\\blue225;\\red248\\green250\\blue252;}",
           "\\viewkind4\\uc1\\landscape\\paperw16838\\paperh11906\\margl567\\margr567\\margt567\\margb567\\f0\\fs18\\cf1\n",
+          companyLogoRtf ? `\\pard\\qc ${companyLogoRtf}\\par\n` : "",
           `\\pard\\qc\\b\\fs30 ${rtfEscape("CRONOGRAMA DE AÇÕES SST")}\\b0\\fs18\\par\n`,
           `\\pard\\qc ${rtfEscape(`${plan.title || "Plano de ação"}${company && company !== "-" ? " - " + company : ""}`)}\\par\n`
         ];
@@ -9388,15 +9844,64 @@
           ...plan,
           data: await prepareJpegExportData(data)
         };
+        const preparedData = preparedPlan.data;
         const pages = [
-          await buildJpegSectionPage(preparedPlan, "Cronograma de ações e ações", "JPEG 1 - CRONOGRAMA DE AÇÕES E AÇÕES", drawJpegActionsPage),
-          await buildJpegSectionPage(preparedPlan, "Equipamento de emergência e treinamentos", "JPEG 2 - EQUIPAMENTO DE EMERGÊNCIA E TREINAMENTOS", drawJpegEquipmentTrainingPage)
+          ...buildJpegTableSectionPages(preparedPlan, {
+            title: "Ações",
+            includeOverview: true,
+            headers: ["Item", "Ação recomendada", "Responsável", "Quando", "Prioridade", "Status", "Observação"],
+            widths: [66, 484, 160, 178, 132, 154, 298],
+            rows: (preparedData.actions || []).map((row, index) => [
+              String(index + 1),
+              jpegCellFromRich(row._jpegAction || richContentForPdf(row.actionHtml)),
+              row.responsible || "-",
+              row.when || "-",
+              row.priority || "-",
+              row.status || "-",
+              jpegCellFromRich(row._jpegObservation || richContentForPdf(row.observationHtml, { imagePlaceholder: false }))
+            ])
+          }),
+          ...buildJpegTableSectionPages(preparedPlan, {
+            title: "Equipamentos de Emergência",
+            headers: ["Item", "Descrição", "Responsável", "Status", "Observação"],
+            widths: [66, 620, 220, 170, 392],
+            rows: (preparedData.equipment || []).map((row, index) => [
+              String(index + 1),
+              jpegCellFromRich(row._jpegDescription || richContentForPdf(row.descriptionHtml)),
+              row.responsible || "-",
+              row.status || "-",
+              jpegCellFromRich(row._jpegObservation || richContentForPdf(row.observationHtml, { imagePlaceholder: false }))
+            ])
+          }),
+          ...buildJpegTableSectionPages(preparedPlan, {
+            title: "Treinamentos",
+            headers: ["Item", "Treinamento", "Responsável", "Quando", "Status", "Observação"],
+            widths: [66, 470, 210, 220, 170, 332],
+            rows: (preparedData.trainings || []).map((row, index) => [
+              String(index + 1),
+              jpegCellFromRich(row._jpegTraining || richContentForPdf(row.trainingHtml)),
+              row.responsible || "-",
+              row.when || "-",
+              row.status || "-",
+              jpegCellFromRich(row._jpegObservation || richContentForPdf(row.observationHtml, { imagePlaceholder: false }))
+            ])
+          })
         ];
 
-        return pages;
+        const totalPages = pages.length;
+        return Promise.all(pages.map(async (page, index) => {
+          drawJpegSectionFooter(page.ctx, page.canvas.width, 64, index + 1, totalPages);
+          return {
+            blob: await canvasToJpegBlob(page.canvas, 0.92),
+            fileSuffix: `PÁGINA ${String(index + 1).padStart(2, "0")}`
+          };
+        }));
       }
 
       async function prepareJpegExportData(data) {
+        const logoItems = data.meta && data.meta.companyLogoImage
+          ? await loadJpegEvidenceImages([{ src: data.meta.companyLogoImage }])
+          : [];
         const actions = await Promise.all((data.actions || []).map(async row => ({
           ...row,
           _jpegAction: await richContentForJpeg(row.actionHtml),
@@ -9413,7 +9918,16 @@
           _jpegObservation: await richContentForJpeg(row.observationHtml, { imagePlaceholder: false })
         })));
 
-        return { ...data, actions, equipment, trainings };
+        return {
+          ...data,
+          meta: {
+            ...(data.meta || {}),
+            _jpegCompanyLogoImage: logoItems[0] ? logoItems[0].image : null
+          },
+          actions,
+          equipment,
+          trainings
+        };
       }
 
       async function richContentForJpeg(value, options = {}) {
@@ -9425,48 +9939,78 @@
         };
       }
 
-      async function buildJpegSectionPage(plan, title, fileSuffix, drawBody) {
+      // Divide cada seção em páginas A4 paisagem, sem cortar linhas de tabela.
+      function buildJpegTableSectionPages(plan, config) {
         const width = 1600;
-        const measureCanvas = document.createElement("canvas");
-        measureCanvas.width = width;
-        const measureCtx = measureCanvas.getContext("2d");
-        const height = Math.min(Math.max(1100, drawJpegSection(measureCtx, plan, title, drawBody, { measureOnly: true })), 30000);
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        drawJpegSection(ctx, plan, title, drawBody);
-        return {
-          blob: await canvasToJpegBlob(canvas, 0.92),
-          fileSuffix
-        };
+        const height = 1131;
+        const margin = 64;
+        const pageBottom = height - 82;
+        const rows = config.rows || [];
+        const pages = [];
+        let rowIndex = 0;
+        let pageIndex = 0;
+
+        do {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          let y = drawJpegSection(ctx, plan, config.title, { continuation: pageIndex > 0 });
+
+          if (config.includeOverview && pageIndex === 0) {
+            const data = plan.data || {};
+            const meta = data.meta || {};
+            y = drawJpegDescription(ctx, richContentForPdf(meta.description || DEFAULT_DESCRIPTION).text, margin, y + 18, width - margin * 2, false);
+            y = drawJpegSummary(ctx, getExecutiveStats(plan), margin, y + 18, width - margin * 2, false);
+          }
+
+          const tableY = y + 18;
+          const availableHeight = pageBottom - tableY - 80;
+          const chunk = [];
+          let usedHeight = 0;
+          while (rowIndex < rows.length) {
+            const rowHeight = measureJpegTableRowHeight(ctx, rows[rowIndex], config.widths, false);
+            if (chunk.length && usedHeight + rowHeight > availableHeight) break;
+            chunk.push(rows[rowIndex]);
+            usedHeight += rowHeight;
+            rowIndex += 1;
+            if (usedHeight >= availableHeight) break;
+          }
+
+          drawJpegTable(ctx, config.title, [config.headers, ...chunk], margin, tableY, config.widths, false);
+          pages.push({ canvas, ctx });
+          pageIndex += 1;
+        } while (rowIndex < rows.length || (rows.length === 0 && pages.length === 0));
+
+        return pages;
       }
 
-      function drawJpegSection(ctx, plan, sectionTitle, drawBody, options = {}) {
-        const measureOnly = !!options.measureOnly;
+      function drawJpegSection(ctx, plan, sectionTitle, options = {}) {
         const width = 1600;
         const margin = 64;
         const contentWidth = width - margin * 2;
         const data = plan.data || { meta: {}, actions: [], equipment: [], trainings: [] };
         const meta = data.meta || {};
-        const stats = getExecutiveStats(plan);
         const company = meta.company || plan.company || "-";
         const documentName = meta.documentName || plan.documentType || "-";
         const generatedAt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
         let y = margin;
 
-        if (!measureOnly) {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, width, ctx.canvas.height);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, ctx.canvas.height);
+        const logo = meta._jpegCompanyLogoImage;
+        if (logo) {
+          drawImageContained(ctx, logo, margin, y, 82, 74);
+        } else {
           ctx.fillStyle = "#2563eb";
           canvasRoundRect(ctx, margin, y, 74, 74, 12, true);
-          ctx.fillStyle = "#0f172a";
-          ctx.font = "900 34px Segoe UI, Arial, sans-serif";
-          ctx.fillText(sectionTitle, margin + 96, y + 30);
-          ctx.font = "700 17px Segoe UI, Arial, sans-serif";
-          ctx.fillStyle = "#64748b";
-          ctx.fillText(`CRONOGRAMA DE AÇÕES SST | Gerado em ${generatedAt}`, margin + 96, y + 58);
         }
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "900 34px Segoe UI, Arial, sans-serif";
+        ctx.fillText(`${sectionTitle}${options.continuation ? " - CONTINUAÇÃO" : ""}`, margin + 104, y + 30);
+        ctx.font = "700 17px Segoe UI, Arial, sans-serif";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(`CRONOGRAMA DE AÇÕES SST | Gerado em ${generatedAt}`, margin + 104, y + 58);
         y += 106;
 
         y = drawJpegMetaGrid(ctx, [
@@ -9474,59 +10018,11 @@
           ["Documento", documentName],
           ["Criação / Revisão", meta.revisionDate || "-"],
           ["Plano", plan.title || "-"]
-        ], margin, y, contentWidth, measureOnly);
-
-        y = drawBody(ctx, y + 20, measureOnly, { data, meta, stats, margin, contentWidth, width, plan });
-
-        if (!measureOnly) drawJpegSectionFooter(ctx, width, margin);
-        return y + 90;
+        ], margin, y, contentWidth, false);
+        return y;
       }
 
-      function drawJpegActionsPage(ctx, y, measureOnly, context) {
-        const { data, meta, stats, margin, contentWidth } = context;
-        y = drawJpegDescription(ctx, richContentForPdf(meta.description || DEFAULT_DESCRIPTION).text, margin, y + 20, contentWidth, measureOnly);
-        y = drawJpegSummary(ctx, stats, margin, y + 18, contentWidth, measureOnly);
-        return drawJpegTable(ctx, "Ações", [
-          ["Item", "Ação recomendada", "Responsável", "Quando", "Prioridade", "Status", "Observação"],
-          ...(data.actions || []).map((row, index) => [
-            String(index + 1),
-            jpegCellFromRich(row._jpegAction || richContentForPdf(row.actionHtml)),
-            row.responsible || "-",
-            row.when || "-",
-            row.priority || "-",
-            row.status || "-",
-            jpegCellFromRich(row._jpegObservation || richContentForPdf(row.observationHtml, { imagePlaceholder: false }))
-          ])
-        ], margin, y + 18, [66, 484, 160, 178, 132, 154, 298], measureOnly);
-      }
-
-      function drawJpegEquipmentTrainingPage(ctx, y, measureOnly, context) {
-        const { data, margin } = context;
-        y = drawJpegTable(ctx, "Equipamentos de Emergência", [
-          ["Item", "Descrição", "Responsável", "Status", "Observação"],
-          ...(data.equipment || []).map((row, index) => [
-            String(index + 1),
-            jpegCellFromRich(row._jpegDescription || richContentForPdf(row.descriptionHtml)),
-            row.responsible || "-",
-            row.status || "-",
-            jpegCellFromRich(row._jpegObservation || richContentForPdf(row.observationHtml, { imagePlaceholder: false }))
-          ])
-        ], margin, y + 18, [66, 620, 220, 170, 392], measureOnly);
-
-        return drawJpegTable(ctx, "Treinamentos", [
-          ["Item", "Treinamento", "Responsável", "Quando", "Status", "Observação"],
-          ...(data.trainings || []).map((row, index) => [
-            String(index + 1),
-            jpegCellFromRich(row._jpegTraining || richContentForPdf(row.trainingHtml)),
-            row.responsible || "-",
-            row.when || "-",
-            row.status || "-",
-            jpegCellFromRich(row._jpegObservation || richContentForPdf(row.observationHtml, { imagePlaceholder: false }))
-          ])
-        ], margin, y + 18, [66, 470, 210, 220, 170, 332], measureOnly);
-      }
-
-      function drawJpegSectionFooter(ctx, width, margin) {
+      function drawJpegSectionFooter(ctx, width, margin, pageNumber, totalPages) {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, ctx.canvas.height - 66, width, 66);
         ctx.strokeStyle = "#e2e8f0";
@@ -9537,9 +10033,9 @@
         ctx.fillStyle = "#64748b";
         ctx.font = "700 14px Segoe UI, Arial, sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText("SATS - Exportação JPEG por seção", margin, ctx.canvas.height - 34);
+        ctx.fillText("SATS - Exportação JPEG A4", margin, ctx.canvas.height - 34);
         ctx.textAlign = "right";
-        ctx.fillText("Acompanhamento interno", width - margin, ctx.canvas.height - 34);
+        ctx.fillText(`Página ${String(pageNumber).padStart(2, "0")} de ${String(totalPages).padStart(2, "0")}`, width - margin, ctx.canvas.height - 34);
         ctx.textAlign = "left";
       }
 
@@ -9646,11 +10142,26 @@
         });
       }
 
+      function measureJpegTableRowHeight(ctx, row, widths, isHeader = false) {
+        if (isHeader) return 42;
+        const lineHeight = 20;
+        const cellPadding = 12;
+        ctx.font = "600 14px Segoe UI, Arial, sans-serif";
+        return Math.max(56, Math.max(...row.map((cell, index) => {
+          const maxLines = index === 1 ? 8 : index === row.length - 1 ? 5 : 3;
+          const displayText = jpegCellDisplayText(cell);
+          const textLines = displayText ? wrapCanvasText(ctx, displayText, widths[index] - cellPadding * 2) : [];
+          const imageCount = jpegCellImages(cell).length;
+          const imageRows = imageCount ? Math.ceil(Math.min(imageCount, 4) / (imageCount > 1 ? 2 : 1)) : 0;
+          const imageHeight = imageRows ? imageRows * 98 + 8 : 0;
+          return Math.min(maxLines, textLines.length) * lineHeight + cellPadding * 2 + imageHeight;
+        })));
+      }
+
       function drawJpegTable(ctx, title, rows, x, y, widths, measureOnly) {
         const tableWidth = widths.reduce((sum, value) => sum + value, 0);
         const lineHeight = 20;
         const cellPadding = 12;
-        const headerHeight = 42;
         let cursorY = y;
         if (!measureOnly) {
           ctx.fillStyle = "#0f172a";
@@ -9664,19 +10175,7 @@
         const isTrainingTable = normalizedTitle.includes("trein");
         const priorityColumn = isActionsTable ? 4 : -1;
         const statusColumn = isActionsTable ? 5 : isEquipmentTable ? 3 : isTrainingTable ? 4 : -1;
-        ctx.font = "600 14px Segoe UI, Arial, sans-serif";
-        const rowHeights = rows.map((row, rowIndex) => {
-          if (rowIndex === 0) return headerHeight;
-          return Math.max(56, Math.max(...row.map((cell, index) => {
-            const maxLines = index === 1 ? 8 : index === row.length - 1 ? 5 : 3;
-            const displayText = jpegCellDisplayText(cell);
-            const textLines = displayText ? wrapCanvasText(ctx, displayText, widths[index] - cellPadding * 2) : [];
-            const imageCount = jpegCellImages(cell).length;
-            const imageRows = imageCount ? Math.ceil(Math.min(imageCount, 4) / (imageCount > 1 ? 2 : 1)) : 0;
-            const imageHeight = imageRows ? imageRows * 98 + 8 : 0;
-            return Math.min(maxLines, textLines.length) * lineHeight + cellPadding * 2 + imageHeight;
-          })));
-        });
+        const rowHeights = rows.map((row, rowIndex) => measureJpegTableRowHeight(ctx, row, widths, rowIndex === 0));
         if (!measureOnly && rows.length === 1) {
           ctx.fillStyle = "#f8fafc";
           ctx.strokeStyle = "#cbd5e1";
@@ -9952,9 +10451,10 @@
           && !options.rowDelete
           && !options.rowDeletes
           && !options.profileId
+          && !options.improvements
           && !options.hiddenAdd
           && !options.hiddenRemove;
-        if (isRestrictedAdminUser() && !options.localOnly) {
+        if (isRestrictedAdminUser() && !options.localOnly && !options.improvements) {
           egressDiag("saveApp bloqueado por modo readonly", {
             options: Object.keys(options),
             pureActivitySave: !!pureActivitySave,
@@ -9964,6 +10464,7 @@
         }
         if (!options.localOnly) {
           if (options.fullSave) pendingFullSave = true;
+          if (options.improvements) pendingImprovementsSave = true;
           if (options.deleteProfileId) pendingProfileDeletes.add(options.deleteProfileId);
           if (options.deletePlanId) pendingPlanDeletes.add(options.deletePlanId);
           if (options.deleteFolderId) pendingFolderDeletes.add(options.deleteFolderId);
@@ -9979,7 +10480,7 @@
           if (options.hiddenAdd) pendingHiddenAdds.add(options.hiddenAdd);
           if (options.hiddenRemove) pendingHiddenRemoves.add(options.hiddenRemove);
           if (options.profileId) dirtyProfileIds.add(options.profileId);
-          if (!options.fullSave && !options.deleteProfileId && !options.profileId && !pureActivitySave && app.activeProfileId) {
+          if (!options.fullSave && !options.improvements && !options.deleteProfileId && !options.profileId && !pureActivitySave && app.activeProfileId) {
             dirtyProfileIds.add(app.activeProfileId);
           }
         }
@@ -9989,6 +10490,7 @@
 
       function hasPendingCloudChanges() {
         return pendingFullSave
+          || pendingImprovementsSave
           || dirtyProfileIds.size > 0
           || pendingProfileDeletes.size > 0
           || pendingPlanDeletes.size > 0
@@ -10002,6 +10504,7 @@
       function takePendingCloudSnapshot() {
         return {
           fullSave: pendingFullSave,
+          improvements: pendingImprovementsSave,
           profileIds: Array.from(dirtyProfileIds),
           deletedProfileIds: Array.from(pendingProfileDeletes),
           deletedPlanIds: Array.from(pendingPlanDeletes),
@@ -10015,6 +10518,7 @@
 
       function clearPendingCloudSnapshot(snapshot) {
         if (snapshot.fullSave) pendingFullSave = false;
+        if (snapshot.improvements) pendingImprovementsSave = false;
         snapshot.profileIds.forEach(id => dirtyProfileIds.delete(id));
         snapshot.deletedProfileIds.forEach(id => pendingProfileDeletes.delete(id));
         snapshot.deletedPlanIds.forEach(id => pendingPlanDeletes.delete(id));
@@ -10027,6 +10531,7 @@
 
       function requeuePendingCloudSnapshot(snapshot) {
         if (snapshot.fullSave) pendingFullSave = true;
+        if (snapshot.improvements) pendingImprovementsSave = true;
         snapshot.profileIds.forEach(id => dirtyProfileIds.add(id));
         snapshot.deletedProfileIds.forEach(id => pendingProfileDeletes.add(id));
         snapshot.deletedPlanIds.forEach(id => pendingPlanDeletes.add(id));
@@ -10039,6 +10544,7 @@
 
       function snapshotHasOnlyActivity(snapshot) {
         return !snapshot.fullSave
+          && !snapshot.improvements
           && !snapshot.profileIds.length
           && !snapshot.deletedProfileIds.length
           && !snapshot.deletedPlanIds.length
@@ -10093,6 +10599,7 @@
         }
         const snapshot = takePendingCloudSnapshot();
         if (!snapshot.fullSave
+          && !snapshot.improvements
           && !snapshot.profileIds.length
           && !snapshot.deletedProfileIds.length
           && !snapshot.deletedPlanIds.length
@@ -10104,7 +10611,7 @@
           egressDiag("saveAppToCloud ignorada sem mudanças pendentes");
           return;
         }
-        if (isRestrictedAdminUser()) {
+        if (isRestrictedAdminUser() && !snapshot.improvements) {
           egressDiag("saveAppToCloud bloqueada por modo readonly", { snapshot: snapshotDiag(snapshot) });
           clearPendingCloudSnapshot(snapshot);
           return;
@@ -10211,6 +10718,10 @@
         if (snapshot.activityIds && snapshot.activityIds.length) {
           const activityIds = new Set(snapshot.activityIds);
           latest.activityLog = mergeActivityLogs(latest.activityLog, app.activityLog.filter(entry => activityIds.has(entry.id)));
+        }
+
+        if (snapshot.improvements) {
+          latest.improvementSuggestions = mergeImprovementSuggestions(latest.improvementSuggestions, app.improvementSuggestions);
         }
 
         return sharedAppData(latest);
