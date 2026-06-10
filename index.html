@@ -861,6 +861,146 @@
       gap: 10px;
     }
 
+    .procedure-admin-layout,
+    .procedure-admin-list,
+    .procedure-node-list,
+    .procedure-validation-list,
+    .procedure-version-list,
+    .procedure-preview-path {
+      display: grid;
+      gap: 12px;
+    }
+
+    .procedure-admin-subtabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      padding-bottom: 4px;
+    }
+
+    .procedure-admin-card,
+    .procedure-node-card,
+    .procedure-result-block,
+    .procedure-version-card,
+    .procedure-preview-shell {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-soft);
+      padding: 14px;
+    }
+
+    .procedure-admin-card.is-selected,
+    .procedure-node-card.is-root {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.12);
+    }
+
+    .procedure-admin-grid,
+    .procedure-node-grid,
+    .procedure-option-row,
+    .procedure-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .procedure-admin-editor {
+      display: grid;
+      gap: 14px;
+    }
+
+    .procedure-field {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .procedure-field.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    .procedure-field label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .procedure-field input,
+    .procedure-field select,
+    .procedure-field textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--text);
+      padding: 9px 10px;
+      font: inherit;
+    }
+
+    .procedure-field textarea {
+      min-height: 96px;
+      resize: vertical;
+      white-space: pre-wrap;
+    }
+
+    .procedure-option-row,
+    .procedure-result-block {
+      align-items: end;
+    }
+
+    .procedure-validation-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .procedure-validation-list li {
+      border-left: 4px solid #f59e0b;
+      background: var(--surface-soft);
+      padding: 9px 10px;
+      font-size: 12px;
+    }
+
+    .procedure-validation-list li.is-error {
+      border-left-color: #dc2626;
+    }
+
+    .procedure-preview-shell {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .procedure-preview-node {
+      border: 1px solid var(--line);
+      border-left: 5px solid #2563eb;
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 16px;
+    }
+
+    .procedure-preview-node[data-node-type="result"] {
+      border-left-color: #16a34a;
+    }
+
+    .procedure-preview-node p,
+    .procedure-result-block p {
+      white-space: pre-wrap;
+    }
+
+    .procedure-danger-zone {
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+
+    html[data-theme="dark"] .procedure-danger-zone,
+    html[data-theme="dark"] .management-danger-zone {
+      border-color: #7f1d1d;
+      background: #2a1114;
+    }
+
     html[data-theme="dark"] .management-access-badge {
       border-color: #6d28d9;
       background: #2e1065;
@@ -932,7 +1072,11 @@
       .management-dashboard-grid,
       .management-locked-grid,
       .management-permission-grid,
-      .management-checkbox-grid {
+      .management-checkbox-grid,
+      .procedure-admin-grid,
+      .procedure-node-grid,
+      .procedure-option-row,
+      .procedure-result-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -4898,6 +5042,7 @@
         <button class="management-tab" type="button" data-management-tab="profiles">Perfis</button>
         <button class="management-tab" type="button" data-management-tab="folders">Pastas</button>
         <button class="management-tab" type="button" data-management-tab="plans">Planos</button>
+        <button class="management-tab" type="button" data-management-tab="procedures">Procedimentos</button>
         <button class="management-tab" type="button" data-management-tab="suggestions">Sugestões</button>
         <button class="management-tab" type="button" data-management-tab="activity">Atividades</button>
         <button class="management-tab" type="button" data-management-tab="permissions">Permissões</button>
@@ -5652,7 +5797,7 @@
 
       const SUPABASE_URL = "https://omyyxdjozumrlgpfexau.supabase.co";
       const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mjNFpgsW0K1X_7id1RADfA_Hk-A1_7i";
-      const APP_VERSION = "sats-2026-06-10-management-phase-2";
+      const APP_VERSION = "sats-2026-06-10-management-phase-3-final";
       const EGRESS_DIAG_PREFIX = "[EGRESS-DIAG]";
       const SHARED_STATE_ID = "main";
       const SHARED_STORAGE_KEY = "planoDeAcaoSST.shared.v1";
@@ -5673,6 +5818,10 @@
         "Criou pasta pela gestão", "Editou pasta", "Ocultou pasta", "Desocultou pasta",
         "Renomeou plano", "Moveu plano", "Excluiu logs", "Limpou logs filtrados", "Limpou todos os logs",
         "Adicionou permissão", "Alterou permissão", "Removeu permissão",
+        "Criou rascunho de Procedimentos", "Editou Procedimentos", "Criou risco físico", "Editou risco físico",
+        "Duplicou risco físico", "Ativou risco físico", "Desativou risco físico", "Excluiu risco físico",
+        "Publicou Procedimentos", "Restaurou versão de Procedimentos", "Importou Procedimentos",
+        "Exportou Procedimentos", "Importou risco físico", "Exportou risco físico",
         RESTRICTED_ATTEMPT_ACTION
       ]);
       const DEFAULT_FOLDER_ID = "default-folder";
@@ -5695,7 +5844,9 @@
       const MANAGEMENT_PHASE_1_EMAILS = new Set([SUPER_ADMIN_EMAIL, "administrativo@protege.med.br"]);
       const MANAGEMENT_PERMISSION_KEYS = [
         "accessManagement", "phase1View", "manageSuggestions", "viewActivity", "deleteLogs",
-        "manageProfiles", "manageFolders", "managePlans", "manageHiddenItems", "managePermissions"
+        "manageProfiles", "manageFolders", "managePlans", "manageHiddenItems", "managePermissions",
+        "manageProcedures", "editProcedureDrafts", "publishProcedures", "restoreProcedureVersions",
+        "importProcedureLibrary", "exportProcedureLibrary"
       ];
       const MANAGEMENT_PERMISSION_LABELS = {
         accessManagement: "Acessar Gestão SATS",
@@ -5707,7 +5858,13 @@
         manageFolders: "Gerenciar pastas",
         managePlans: "Gerenciar planos",
         manageHiddenItems: "Gerenciar itens ocultos",
-        managePermissions: "Gerenciar permissões"
+        managePermissions: "Gerenciar permissões",
+        manageProcedures: "Gerenciar Procedimentos",
+        editProcedureDrafts: "Editar rascunhos de Procedimentos",
+        publishProcedures: "Publicar Procedimentos",
+        restoreProcedureVersions: "Restaurar versões de Procedimentos",
+        importProcedureLibrary: "Importar biblioteca de Procedimentos",
+        exportProcedureLibrary: "Exportar biblioteca de Procedimentos"
       };
       const ADMIN_MODE_SESSION_KEY = "sats.adminMode.v1";
       const IMPROVEMENT_WIDGET_STATE_KEY = "sats.improvementWidget.v1";
@@ -5772,6 +5929,12 @@
       let selectedPortalApp = null;
       let adminModeEnabled = sessionStorage.getItem(ADMIN_MODE_SESSION_KEY) === "on";
       let activeManagementTab = "dashboard";
+      let activeProcedureAdminView = "overview";
+      let activeProcedureCategoryId = "laudos-fisicos";
+      let activePhysicalReportId = null;
+      let activeFlowPreviewState = {};
+      let activeProcedurePreviewSource = "draft";
+      let activeProcedureVersionPreviewId = "";
       const managementFilters = { profiles: "", plans: "", planProfile: "", planFolder: "", suggestions: "", suggestionStatus: "all", activity: "", activityAction: "", activityUser: "" };
       let selectedManagementLogIds = new Set();
       let managementPlanEditContext = null;
@@ -6011,6 +6174,12 @@
       function canManagePlans(user = currentUser) { return hasManagementPermission("managePlans", user); }
       function canManageHiddenItems(user = currentUser) { return hasManagementPermission("manageHiddenItems", user); }
       function canManagePermissions(user = currentUser) { return hasManagementPermission("managePermissions", user); }
+      function canManageProcedures(user = currentUser) { return hasManagementPermission("manageProcedures", user); }
+      function canEditProcedureDrafts(user = currentUser) { return hasManagementPermission("editProcedureDrafts", user); }
+      function canPublishProcedures(user = currentUser) { return hasManagementPermission("publishProcedures", user); }
+      function canRestoreProcedureVersions(user = currentUser) { return hasManagementPermission("restoreProcedureVersions", user); }
+      function canImportProcedureLibrary(user = currentUser) { return hasManagementPermission("importProcedureLibrary", user); }
+      function canExportProcedureLibrary(user = currentUser) { return hasManagementPermission("exportProcedureLibrary", user); }
       function canAccessHiddenItems(user = currentUser) {
         if (isFullSystemAdmin(user)) return isSystemAdminUser(user);
         return canManageHiddenItems(user);
@@ -6256,6 +6425,8 @@
           els.managementContent.addEventListener("click", handleManagementClick);
           els.managementContent.addEventListener("input", handleManagementFilterInput);
           els.managementContent.addEventListener("change", handleManagementFilterInput);
+          els.managementContent.addEventListener("input", handleManagementProcedureInput);
+          els.managementContent.addEventListener("change", handleManagementProcedureInput);
         }
         if (els.managementPermissionForm) els.managementPermissionForm.addEventListener("submit", saveManagementPermissionFromModal);
         if (els.managementPermissionCheckboxes) els.managementPermissionCheckboxes.addEventListener("change", enforcePermissionDependencies);
@@ -7346,6 +7517,7 @@
         activityLog: [],
         improvementSuggestions: [],
         managementPermissions: { users: [] },
+        procedureLibrary: createDefaultProcedureLibrary(),
         profiles: []
       };
       }
@@ -7383,6 +7555,7 @@
           activityLog: normalizeActivityLog(raw.activityLog || raw.activity_log || []),
           improvementSuggestions: normalizeImprovementSuggestions(raw.improvementSuggestions || raw.improvement_suggestions || []),
           managementPermissions: normalizeManagementPermissions(raw.managementPermissions || raw.management_permissions),
+          procedureLibrary: normalizeProcedureLibrary(raw.procedureLibrary || raw.procedure_library),
           profiles: Array.isArray(raw.profiles) ? raw.profiles : []
         };
 
@@ -7410,6 +7583,10 @@
           permissions.accessManagement = true;
           permissions.phase1View = true;
         }
+        if (["editProcedureDrafts", "publishProcedures", "restoreProcedureVersions", "importProcedureLibrary", "exportProcedureLibrary"].some(key => permissions[key])) {
+          permissions.manageProcedures = true;
+        }
+        if (permissions.publishProcedures) permissions.editProcedureDrafts = true;
         return {
           id: entry.id || createId(),
           email: normalizeEmail(entry.email),
@@ -7418,6 +7595,379 @@
           createdAt: entry.createdAt || new Date().toISOString(),
           updatedAt: entry.updatedAt || entry.createdAt || new Date().toISOString(),
           createdBy: String(entry.createdBy || "")
+        };
+      }
+
+      function createProcedureResultNode(id, title, text, tone = "info") {
+        return {
+          id,
+          type: "result",
+          title,
+          text: "",
+          note: "",
+          noteTone: "normal",
+          status: title,
+          tone,
+          options: [],
+          blocks: [{
+            id: `${id}-block`,
+            title: "Conclusão técnica",
+            text,
+            copyable: true,
+            order: 1
+          }]
+        };
+      }
+
+      function createQuantitativePhysicalReport(id, title, order, reference) {
+        const safeId = id.replace(/[^a-z0-9-]/g, "");
+        const nodes = {};
+        nodes.medicao = {
+          id: "medicao",
+          type: "question",
+          title: "Medição quantitativa",
+          text: "FOI REALIZADA MEDIÇÃO QUANTITATIVA?",
+          note: `Avalie a exposição e os critérios técnicos aplicáveis a ${title}.`,
+          noteTone: "warning",
+          options: [
+            { id: "sim", label: "SIM", tone: "success", nextNodeId: "acima-lt" },
+            { id: "nao", label: "NÃO", tone: "danger", nextNodeId: "sem-medicao" }
+          ]
+        };
+        nodes["acima-lt"] = {
+          id: "acima-lt",
+          type: "question",
+          title: "Resultado da avaliação",
+          text: "O RESULTADO FICOU ACIMA DO LIMITE DE TOLERÂNCIA?",
+          note: "",
+          noteTone: "normal",
+          options: [
+            { id: "sim", label: "SIM", tone: "danger", nextNodeId: "controle" },
+            { id: "nao", label: "NÃO", tone: "success", nextNodeId: "abaixo-lt" }
+          ]
+        };
+        nodes.controle = {
+          id: "controle",
+          type: "question",
+          title: "Medidas de controle",
+          text: "AS MEDIDAS DE CONTROLE E A GESTÃO DE EPI NEUTRALIZAM A EXPOSIÇÃO?",
+          note: "Considere a efetividade real, registros, uso habitual e critérios da NR-06.",
+          noteTone: "info",
+          options: [
+            { id: "sim", label: "SIM", tone: "success", nextNodeId: "neutralizado" },
+            { id: "nao", label: "NÃO", tone: "danger", nextNodeId: "enquadramento" }
+          ]
+        };
+        nodes["sem-medicao"] = {
+          id: "sem-medicao",
+          type: "info",
+          title: "Ausência de medição",
+          text: "Não há medição quantitativa suficiente para concluir o enquadramento.",
+          note: "Escolha o encaminhamento técnico mais adequado ao caso analisado.",
+          noteTone: "warning",
+          options: [
+            { id: "preventivo", label: "POSSIBILIDADE 1", tone: "warning", nextNodeId: "preventivo" },
+            { id: "inconclusivo", label: "POSSIBILIDADE 2", tone: "info", nextNodeId: "inconclusivo" },
+            { id: "observacao", label: "OBSERVAÇÃO", tone: "muted", nextNodeId: "irrelevante" }
+          ]
+        };
+        nodes["abaixo-lt"] = createProcedureResultNode("abaixo-lt", "Resultado: Abaixo do limite de tolerância", `A avaliação quantitativa de ${title} resultou abaixo do Limite de Tolerância aplicável. Diante dos dados disponíveis, não se caracteriza enquadramento por este agente. Referência técnica: ${reference}.`, "success");
+        nodes.neutralizado = createProcedureResultNode("neutralizado", "Resultado: Exposição neutralizada", `Foram identificadas medidas de controle eficazes e gestão adequada dos equipamentos de proteção aplicáveis a ${title}, reduzindo a exposição a condições aceitáveis. Referência técnica: ${reference}.`, "success");
+        nodes.enquadramento = createProcedureResultNode("enquadramento", "Resultado: Reconhecimento do enquadramento", `A avaliação de ${title} ficou acima do limite aplicável e não foram comprovadas medidas eficazes de neutralização. Recomenda-se reconhecer o enquadramento e adotar medidas corretivas. Referência técnica: ${reference}.`, "danger");
+        nodes.preventivo = createProcedureResultNode("preventivo", "Resultado: Enquadramento preventivo", `Na ausência de medição conclusiva de ${title}, e havendo exposição tecnicamente relevante, recomenda-se tratamento preventivo até que seja realizada avaliação quantitativa representativa.`, "warning");
+        nodes.inconclusivo = createProcedureResultNode("inconclusivo", "Resultado: Laudo inconclusivo", `Não é possível concluir o enquadramento de ${title} sem avaliação quantitativa representativa. Recomenda-se realizar medição conforme metodologia aplicável.`, "info");
+        nodes.irrelevante = createProcedureResultNode("irrelevante", "Observação: Exposição irrelevante", `Quando a análise preliminar demonstrar exposição muito baixa, eventual ou irrelevante a ${title}, o agente não deve ser inserido como risco ocupacional relevante sem justificativa técnica.`, "muted");
+        return {
+          id: safeId,
+          title,
+          subtitle: reference,
+          description: `Fluxo técnico editável para análise de ${title}.`,
+          tags: [title, reference, "laudo físico"],
+          active: true,
+          deleted: false,
+          order,
+          rootNodeId: "medicao",
+          nodes,
+          adminNote: "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: ""
+        };
+      }
+
+      function createQualitativePhysicalReport(id, title, order, exposureQuestion, reference) {
+        const report = createQuantitativePhysicalReport(id, title, order, reference);
+        report.nodes = {
+          exposicao: {
+            id: "exposicao",
+            type: "question",
+            title: "Análise da exposição",
+            text: exposureQuestion,
+            note: `Considere habitualidade, permanência e condições reais de trabalho relacionadas a ${title}.`,
+            noteTone: "info",
+            options: [
+              { id: "sim", label: "SIM", tone: "danger", nextNodeId: "controle" },
+              { id: "nao", label: "NÃO", tone: "success", nextNodeId: "nao-enquadra" }
+            ]
+          },
+          controle: {
+            id: "controle",
+            type: "question",
+            title: "Medidas de controle",
+            text: "AS MEDIDAS DE CONTROLE OU EPIS ELIMINAM A EXPOSIÇÃO?",
+            note: "Avalie a efetividade prática e os registros disponíveis.",
+            noteTone: "warning",
+            options: [
+              { id: "sim", label: "SIM", tone: "success", nextNodeId: "neutralizado" },
+              { id: "nao", label: "NÃO", tone: "danger", nextNodeId: "enquadramento" }
+            ]
+          },
+          "nao-enquadra": createProcedureResultNode("nao-enquadra", "Resultado: Não enquadramento", `Não foi identificada exposição habitual e relevante a ${title}. Diante da análise qualitativa, não se caracteriza enquadramento. Referência técnica: ${reference}.`, "success"),
+          neutralizado: createProcedureResultNode("neutralizado", "Resultado: Exposição controlada", `A exposição a ${title} é controlada por medidas eficazes, não caracterizando enquadramento nas condições analisadas. Referência técnica: ${reference}.`, "success"),
+          enquadramento: createProcedureResultNode("enquadramento", "Resultado: Reconhecimento do enquadramento", `Foi identificada exposição habitual e relevante a ${title}, sem comprovação de neutralização eficaz. Recomenda-se o reconhecimento do enquadramento e a adoção de controles. Referência técnica: ${reference}.`, "danger")
+        };
+        report.rootNodeId = "exposicao";
+        return report;
+      }
+
+      function createDefaultPhysicalReports() {
+        const noise = createQuantitativePhysicalReport("ruido-continuo", "Ruído contínuo", 1, "NR-15, Anexo 1");
+        noise.nodes.medicao.note = "Caso a análise preliminar indique ruído muito baixo ou exposição irrelevante, não insira o risco. Quando houver exposição expressiva sem dosimetria, siga as orientações do fluxo.";
+        return [
+          noise,
+          createQuantitativePhysicalReport("calor", "Calor", 2, "NR-15, Anexo 3"),
+          createQualitativePhysicalReport("umidade", "Umidade", 3, "HÁ CONTATO HABITUAL E PERMANENTE COM LOCAIS ALAGADOS, ENCHARCADOS OU UMIDADE EXCESSIVA?", "NR-15, Anexo 10"),
+          createQuantitativePhysicalReport("vibracao-corpo-inteiro", "Vibração de corpo inteiro", 4, "NR-15, Anexo 8"),
+          createQuantitativePhysicalReport("vibracao-mao-braco", "Vibração localizada / mão-braço", 5, "NR-15, Anexo 8"),
+          createQualitativePhysicalReport("radiacao-nao-ionizante", "Radiação não ionizante", 6, "EXISTE EXPOSIÇÃO HABITUAL À RADIAÇÃO NÃO IONIZANTE?", "NR-15, Anexo 7"),
+          createQualitativePhysicalReport("radiacao-ionizante", "Radiação ionizante", 7, "EXISTE EXPOSIÇÃO OCUPACIONAL HABITUAL À RADIAÇÃO IONIZANTE?", "NR-15, Anexo 5"),
+          createQualitativePhysicalReport("frio", "Frio", 8, "EXISTE EXPOSIÇÃO HABITUAL A CÂMARA FRIA OU LOCAL COM CONDIÇÃO SIMILAR?", "NR-15, Anexo 9")
+        ];
+      }
+
+      function createDefaultProcedureLibrary() {
+        const now = new Date().toISOString();
+        const published = {
+          id: createId(),
+          title: "Biblioteca de Procedimentos SATS",
+          versionLabel: "v1",
+          publishedAt: now,
+          publishedBy: "SATS",
+          changeSummary: "Biblioteca inicial editável",
+          categories: [{
+            id: "laudos-fisicos",
+            title: "Laudos Físicos",
+            type: "physicalReports",
+            description: "Fluxos técnicos para enquadramento de riscos físicos.",
+            active: true,
+            order: 1,
+            items: createDefaultPhysicalReports()
+          }, {
+            id: "laudos-quimicos",
+            title: "Laudos Químicos",
+            type: "physicalReports",
+            description: "Categoria preparada para expansão futura.",
+            active: false,
+            order: 2,
+            items: []
+          }, {
+            id: "laudos-biologicos",
+            title: "Laudos Biológicos",
+            type: "physicalReports",
+            description: "Categoria preparada para expansão futura.",
+            active: false,
+            order: 3,
+            items: []
+          }, {
+            id: "laudos-ergonomicos",
+            title: "Laudos Ergonômicos",
+            type: "physicalReports",
+            description: "Categoria preparada para expansão futura.",
+            active: false,
+            order: 4,
+            items: []
+          }, {
+            id: "procedimentos-gerais",
+            title: "Procedimentos Gerais",
+            type: "general",
+            description: "Categoria preparada para expansão futura.",
+            active: false,
+            order: 5,
+            items: []
+          }]
+        };
+        return {
+          schemaVersion: 1,
+          activePublishedVersionId: published.id,
+          draft: null,
+          published,
+          versions: [],
+          updatedAt: now,
+          updatedBy: "SATS"
+        };
+      }
+
+      function normalizeResultBlock(raw = {}, index = 0) {
+        return {
+          id: raw.id || createId(),
+          title: String(raw.title || "Conclusão"),
+          text: String(raw.text || raw.content || ""),
+          copyable: raw.copyable !== false,
+          order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : index + 1
+        };
+      }
+
+      function normalizeFlowOption(raw = {}, index = 0) {
+        return {
+          id: raw.id || createId(),
+          label: String(raw.label || `Opção ${index + 1}`),
+          tone: ["success", "danger", "warning", "info", "muted"].includes(raw.tone) ? raw.tone : "info",
+          nextNodeId: String(raw.nextNodeId || raw.next || "")
+        };
+      }
+
+      function normalizeFlowNode(raw = {}, fallbackId = "") {
+        const type = ["question", "info", "result"].includes(raw.type) ? raw.type : "question";
+        return {
+          id: String(raw.id || fallbackId || createId()),
+          type,
+          title: String(raw.title || ""),
+          text: String(raw.text || ""),
+          note: String(raw.note || ""),
+          noteTone: ["normal", "info", "warning", "danger", "success"].includes(raw.noteTone) ? raw.noteTone : "normal",
+          status: String(raw.status || ""),
+          tone: ["success", "danger", "warning", "info", "muted"].includes(raw.tone) ? raw.tone : "info",
+          options: type === "result" ? [] : (Array.isArray(raw.options) ? raw.options.map(normalizeFlowOption) : []),
+          blocks: type === "result" ? (Array.isArray(raw.blocks) ? raw.blocks.map(normalizeResultBlock) : []) : []
+        };
+      }
+
+      function normalizePhysicalReport(raw = {}, index = 0) {
+        if ((!raw.nodes || !Object.keys(raw.nodes).length) && (Array.isArray(raw.steps) || Array.isArray(raw.scenarios))) {
+          raw = convertLegacyPhysicalReportToFlow(raw, index);
+        }
+        const sourceNodes = raw.nodes && typeof raw.nodes === "object" ? raw.nodes : {};
+        const nodes = {};
+        Object.entries(sourceNodes).forEach(([key, value]) => {
+          const node = normalizeFlowNode(value, key);
+          if (!nodes[node.id]) nodes[node.id] = node;
+        });
+        return {
+          id: String(raw.id || createId()),
+          title: String(raw.title || "Novo risco físico"),
+          subtitle: String(raw.subtitle || ""),
+          description: String(raw.description || ""),
+          tags: Array.isArray(raw.tags) ? raw.tags.map(String) : String(raw.tags || "").split(",").map(item => item.trim()).filter(Boolean),
+          active: raw.active !== false,
+          deleted: raw.deleted === true,
+          order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : index + 1,
+          rootNodeId: String(raw.rootNodeId || Object.keys(nodes)[0] || ""),
+          nodes,
+          adminNote: String(raw.adminNote || ""),
+          createdAt: raw.createdAt || new Date().toISOString(),
+          updatedAt: raw.updatedAt || raw.createdAt || new Date().toISOString(),
+          updatedBy: String(raw.updatedBy || "")
+        };
+      }
+
+      function convertLegacyPhysicalReportToFlow(legacyReport = {}, index = 0) {
+        const scenarios = Array.isArray(legacyReport.scenarios) ? legacyReport.scenarios : [];
+        const nodes = {
+          "analise-tecnica": {
+            id: "analise-tecnica",
+            type: "info",
+            title: "Análise técnica / Outros cenários",
+            text: legacyReport.intro || legacyReport.description || "Selecione o cenário técnico aplicável.",
+            note: "Conteúdo convertido da estrutura anterior. Revise as conexões no editor.",
+            noteTone: "warning",
+            options: scenarios.map((scenario, scenarioIndex) => ({
+              id: `cenario-${scenarioIndex + 1}`,
+              label: scenario.title || scenario.status || `CENÁRIO ${scenarioIndex + 1}`,
+              tone: scenario.tone || "info",
+              nextNodeId: `resultado-${scenarioIndex + 1}`
+            }))
+          }
+        };
+        scenarios.forEach((scenario, scenarioIndex) => {
+          const blocks = [
+            { title: "Parecer trabalhista", text: scenario.labor || scenario.trabalhista || "" },
+            { title: "Parecer previdenciário", text: scenario.previd || scenario.previdenciario || "" },
+            { title: "Observação", text: scenario.obs || scenario.observation || scenario.text || "" }
+          ].filter(block => block.text);
+          nodes[`resultado-${scenarioIndex + 1}`] = {
+            id: `resultado-${scenarioIndex + 1}`,
+            type: "result",
+            title: scenario.title || scenario.status || `Resultado ${scenarioIndex + 1}`,
+            status: scenario.status || "",
+            tone: scenario.tone || "info",
+            blocks: blocks.map((block, blockIndex) => normalizeResultBlock({ ...block, copyable: true }, blockIndex))
+          };
+        });
+        if (!scenarios.length) {
+          nodes["analise-tecnica"].options = [{ id: "conclusao", label: "ANÁLISE TÉCNICA", tone: "info", nextNodeId: "resultado-1" }];
+          nodes["resultado-1"] = createProcedureResultNode("resultado-1", "Conclusão técnica", legacyReport.text || legacyReport.description || "Texto técnico a revisar.");
+        }
+        return {
+          ...legacyReport,
+          id: legacyReport.id || `risco-convertido-${index + 1}`,
+          title: legacyReport.title || legacyReport.name || "Risco convertido",
+          rootNodeId: "analise-tecnica",
+          nodes
+        };
+      }
+
+      function normalizeProcedureCategory(raw = {}, index = 0) {
+        return {
+          id: String(raw.id || createId()),
+          title: String(raw.title || "Categoria"),
+          type: String(raw.type || "general"),
+          description: String(raw.description || ""),
+          active: raw.active !== false,
+          order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : index + 1,
+          items: Array.isArray(raw.items) ? raw.items.map(normalizePhysicalReport) : []
+        };
+      }
+
+      function normalizeProcedureSnapshot(raw = {}) {
+        return {
+          id: raw.id || createId(),
+          title: String(raw.title || "Biblioteca de Procedimentos SATS"),
+          versionLabel: String(raw.versionLabel || ""),
+          status: raw.status === "draft" ? "draft" : "published",
+          baseVersionId: String(raw.baseVersionId || ""),
+          createdAt: raw.createdAt || new Date().toISOString(),
+          updatedAt: raw.updatedAt || raw.createdAt || new Date().toISOString(),
+          updatedBy: String(raw.updatedBy || ""),
+          publishedAt: String(raw.publishedAt || ""),
+          publishedBy: String(raw.publishedBy || ""),
+          changeSummary: String(raw.changeSummary || ""),
+          categories: Array.isArray(raw.categories) ? raw.categories.map(normalizeProcedureCategory) : []
+        };
+      }
+
+      function normalizeProcedureVersion(raw = {}) {
+        return {
+          id: raw.id || createId(),
+          versionLabel: String(raw.versionLabel || "versão"),
+          publishedAt: raw.publishedAt || new Date().toISOString(),
+          publishedBy: String(raw.publishedBy || ""),
+          changeSummary: String(raw.changeSummary || ""),
+          snapshot: normalizeProcedureSnapshot(raw.snapshot || {})
+        };
+      }
+
+      function normalizeProcedureLibrary(raw) {
+        if (!raw || typeof raw !== "object") return createDefaultProcedureLibrary();
+        const published = raw.published ? normalizeProcedureSnapshot(raw.published) : createDefaultProcedureLibrary().published;
+        const draft = raw.draft ? normalizeProcedureSnapshot({ ...raw.draft, status: "draft" }) : null;
+        return {
+          schemaVersion: 1,
+          activePublishedVersionId: String(raw.activePublishedVersionId || published.id),
+          draft,
+          published,
+          versions: (Array.isArray(raw.versions) ? raw.versions.map(normalizeProcedureVersion) : []).slice(-25),
+          updatedAt: raw.updatedAt || published.publishedAt || new Date().toISOString(),
+          updatedBy: String(raw.updatedBy || published.publishedBy || "")
         };
       }
 
@@ -7591,6 +8141,7 @@
           activityLog: [],
           improvementSuggestions: [],
           managementPermissions: { users: [] },
+          procedureLibrary: createDefaultProcedureLibrary(),
           profiles: [normalizeProfile(profile)]
         };
       }
@@ -7656,6 +8207,78 @@
         return { id: createId(), lastEdited: editedAt, ...row };
       }
 
+      function getDefaultProceduresHtml() {
+        const payload = document.getElementById("satsProceduresPayload")?.textContent?.trim();
+        if (!payload) return "";
+        const bytes = Uint8Array.from(atob(payload), char => char.charCodeAt(0));
+        return new TextDecoder("utf-8").decode(bytes);
+      }
+
+      function buildProceduresFrameHtml(snapshot) {
+        const safeSnapshot = normalizeProcedureSnapshot(snapshot);
+        const embedded = JSON.stringify(safeSnapshot).replace(/</g, "\\u003c").replace(/<\/script/gi, "<\\/script");
+        const frameTheme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+        return `<!doctype html>
+<html lang="pt-BR" data-theme="${frameTheme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SATS - Procedimentos</title>
+<style>
+:root{--bg:#f1f5f9;--surface:#fff;--soft:#f8fafc;--text:#0f172a;--muted:#64748b;--line:#cbd5e1;--primary:#0f766e;--shadow:0 12px 28px rgba(15,23,42,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.55}.shell{width:min(1120px,calc(100% - 24px));margin:auto;padding:18px 0 48px}
+header,.toolbar,.actions,.risk-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}header{justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:16px}.brand strong,.brand small{display:block}.brand small,.muted{color:var(--muted)}
+button,input{font:inherit}button{min-height:38px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--text);padding:7px 12px;font-weight:800;cursor:pointer}button.primary{background:var(--primary);border-color:var(--primary);color:#fff}button.success{border-color:#16a34a;color:#166534}button.danger{border-color:#dc2626;color:#991b1b}button.warning{border-color:#d97706;color:#92400e}
+.hero{padding:28px 0 18px}.hero h1{margin:0 0 5px;font-size:30px}.toolbar{margin-bottom:18px}.toolbar input{flex:1;min-width:220px;min-height:42px;border:1px solid var(--line);border-radius:7px;padding:8px 12px;background:var(--surface);color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}.risk-card,.flow-shell,.node,.result-block{border:1px solid var(--line);border-radius:8px;background:var(--surface);box-shadow:var(--shadow)}.risk-card{padding:16px;display:grid;gap:12px}.risk-card h3,.node h2,.result-block h3{margin:0}.risk-card p{margin:0;color:var(--muted)}
+.flow-shell{padding:18px}.risk-head{justify-content:space-between;margin-bottom:16px}.node{border-left:5px solid #2563eb;padding:18px}.node.info{border-left-color:#f59e0b}.node.result{border-left-color:#16a34a}.node p,.result-block p{white-space:pre-wrap}.note{border-radius:7px;background:#fff7ed;color:#9a3412;padding:10px;font-weight:700}.result-block{margin-top:12px;padding:14px;background:var(--soft)}
+.empty{text-align:center;padding:32px;color:var(--muted)}.hidden{display:none!important}
+html[data-theme="dark"]{--bg:#07111f;--surface:#0f1b2d;--soft:#132238;--text:#e5edf8;--muted:#9badc4;--line:#2a3b52;--shadow:none}html[data-theme="dark"] button.success{color:#86efac}html[data-theme="dark"] button.danger{color:#fca5a5}html[data-theme="dark"] button.warning{color:#fcd34d}html[data-theme="dark"] .note{background:#3a2512;color:#fdba74}
+@media(max-width:620px){.hero h1{font-size:24px}.grid{grid-template-columns:1fr}.flow-shell{padding:12px}}
+</style></head>
+<body><main class="shell"><header><div class="brand"><strong>SATS · Procedimentos</strong><small id="version"></small></div><div class="actions"><button id="legacyBtn">Biblioteca anterior</button><button class="primary" id="backApps">Voltar aos aplicativos</button></div></header>
+<section class="hero"><h1>Biblioteca de Procedimentos</h1><p class="muted">Fluxos técnicos publicados para consulta.</p></section>
+<section id="libraryView"><div class="toolbar"><input id="search" placeholder="Pesquisar risco físico..."></div><div class="grid" id="riskGrid"></div></section>
+<section class="flow-shell hidden" id="flowView"><div class="risk-head"><div><h2 id="flowTitle"></h2><small class="muted" id="flowSubtitle"></small></div><div class="actions"><button id="flowBack">Voltar etapa</button><button id="flowReset">Reiniciar</button><button id="closeFlow">Fechar risco</button></div></div><div id="flowNode"></div></section>
+</main><script>
+(function(){
+"use strict";
+var library=${embedded};
+var category=(library.categories||[]).find(function(item){return item.id==="laudos-fisicos"})||{items:[]};
+var reports=(category.items||[]).filter(function(item){return item.active&&!item.deleted}).sort(function(a,b){return a.order-b.order});
+var activeReport=null;var path=[];
+var grid=document.getElementById("riskGrid"),libraryView=document.getElementById("libraryView"),flowView=document.getElementById("flowView");
+function esc(value){return String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function toneClass(tone){return ["success","danger","warning"].indexOf(tone)>=0?tone:""}
+function renderList(term){term=String(term||"").toLocaleLowerCase("pt-BR");var items=reports.filter(function(r){var nodeText=Object.values(r.nodes||{}).map(function(n){return [n.title,n.text,n.note].concat((n.blocks||[]).map(function(b){return b.title+" "+b.text})).join(" ")}).join(" ");return !term||String(r.title+" "+r.description+" "+(r.tags||[]).join(" ")+" "+nodeText).toLocaleLowerCase("pt-BR").includes(term)});grid.innerHTML=items.map(function(r){return '<article class="risk-card"><div><h3>'+esc(r.title)+'</h3><small class="muted">'+esc(r.subtitle||"Laudo físico")+'</small></div><p>'+esc(r.description||"Fluxo técnico interativo.")+'</p><button class="primary" data-open="'+esc(r.id)+'">Abrir fluxo</button></article>'}).join("")||'<div class="empty">Nenhum risco encontrado.</div>'}
+function openReport(id){activeReport=reports.find(function(r){return r.id===id});if(!activeReport)return;path=[activeReport.rootNodeId];libraryView.classList.add("hidden");flowView.classList.remove("hidden");document.getElementById("flowTitle").textContent=activeReport.title;document.getElementById("flowSubtitle").textContent=activeReport.subtitle||"";renderNode()}
+function renderNode(){var id=path[path.length-1],node=activeReport&&activeReport.nodes[id];if(!node){document.getElementById("flowNode").innerHTML='<div class="empty">Nó não encontrado.</div>';return}var html='<article class="node '+esc(node.type)+'"><h2>'+esc(node.title||activeReport.title)+'</h2>'+(node.text?'<p>'+esc(node.text)+'</p>':'')+(node.note?'<p class="note">'+esc(node.note)+'</p>':'');if(node.type==="result"){html+=(node.blocks||[]).filter(function(b){return b.text}).map(function(b,index){return '<section class="result-block"><h3>'+esc(b.title||"Conclusão")+'</h3><p>'+esc(b.text)+'</p>'+(b.copyable?'<button data-copy="'+index+'">Copiar texto</button>':'')+'</section>'}).join("")}else{html+='<div class="actions">'+(node.options||[]).map(function(o){return '<button class="'+toneClass(o.tone)+'" data-next="'+esc(o.nextNodeId)+'">'+esc(o.label)+'</button>'}).join("")+'</div>'}html+='</article>';document.getElementById("flowNode").innerHTML=html;document.getElementById("flowBack").disabled=path.length<=1}
+grid.addEventListener("click",function(e){var b=e.target.closest("[data-open]");if(b)openReport(b.dataset.open)});
+document.getElementById("flowNode").addEventListener("click",function(e){var next=e.target.closest("[data-next]");if(next&&activeReport.nodes[next.dataset.next]){path.push(next.dataset.next);renderNode();return}var copy=e.target.closest("[data-copy]");if(copy){var node=activeReport.nodes[path[path.length-1]],block=node.blocks[Number(copy.dataset.copy)];if(block)navigator.clipboard.writeText(block.text).then(function(){copy.textContent="Copiado"}).catch(function(){})}});
+document.getElementById("flowBack").onclick=function(){if(path.length>1){path.pop();renderNode()}};
+document.getElementById("flowReset").onclick=function(){if(activeReport){path=[activeReport.rootNodeId];renderNode()}};
+document.getElementById("closeFlow").onclick=function(){activeReport=null;path=[];flowView.classList.add("hidden");libraryView.classList.remove("hidden")};
+document.getElementById("search").oninput=function(e){renderList(e.target.value)};
+document.getElementById("backApps").onclick=function(){parent.postMessage({type:"sats:show-app-selector"},"*")};
+document.getElementById("legacyBtn").onclick=function(){parent.postMessage({type:"sats:open-legacy-procedures"},"*")};
+document.getElementById("version").textContent=(library.versionLabel||"Publicado")+(library.publishedAt?" · "+new Date(library.publishedAt).toLocaleString("pt-BR"):"");
+renderList("");
+})();<\/script></body></html>`;
+      }
+
+      function loadProceduresFrame(forceReload = false) {
+        if (!els.proceduresFrame) return;
+        if (forceReload) els.proceduresFrame.dataset.loaded = "";
+        if (els.proceduresFrame.dataset.loaded) return;
+        try {
+          const published = getProcedureLibrary().published;
+          if (!published?.categories?.length) throw new Error("Biblioteca publicada indisponível");
+          els.proceduresFrame.srcdoc = buildProceduresFrameHtml(published);
+          els.proceduresFrame.dataset.loaded = "published";
+        } catch (error) {
+          console.warn("Biblioteca publicada indisponível. Usando fallback:", error);
+          els.proceduresFrame.srcdoc = getDefaultProceduresHtml();
+          els.proceduresFrame.dataset.loaded = "legacy";
+        }
+      }
+
       function renderApp() {
         const showAuth = !currentUser;
         updateRestrictedAdminUi();
@@ -7695,12 +8318,7 @@
           els.editorScreen.classList.add("hidden");
           hideFolderContextMenu();
           hideRichToolbar();
-          if (!els.proceduresFrame.dataset.loaded) {
-            const payload = document.getElementById("satsProceduresPayload").textContent.trim();
-            const bytes = Uint8Array.from(atob(payload), char => char.charCodeAt(0));
-            els.proceduresFrame.srcdoc = new TextDecoder("utf-8").decode(bytes);
-            els.proceduresFrame.dataset.loaded = "true";
-          }
+          loadProceduresFrame();
           return;
         }
 
@@ -7827,6 +8445,9 @@
         const profiles = getAllManagementProfiles();
         const plans = getAllManagementPlans();
         const suggestions = normalizeImprovementSuggestions(app.improvementSuggestions);
+        const procedureLibrary = normalizeProcedureLibrary(app.procedureLibrary);
+        const physicalCategory = procedureLibrary.published.categories.find(category => category.id === "laudos-fisicos");
+        const physicalReports = physicalCategory?.items || [];
         const allActions = plans.flatMap(item => item.plan.data?.actions || []);
         const latestPlan = [...plans].sort((a, b) => String(b.plan.updatedAt || "").localeCompare(String(a.plan.updatedAt || "")))[0];
         const latestSuggestion = [...suggestions].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))[0];
@@ -7840,6 +8461,12 @@
           newSuggestions: suggestions.filter(item => item.status !== "Resolvida").length,
           resolvedSuggestions: suggestions.filter(item => item.status === "Resolvida").length,
           activities: (app.activityLog || []).length + restrictedAccessLogs.length,
+          publishedProcedureVersion: procedureLibrary.published.versionLabel || "-",
+          activePhysicalReports: physicalReports.filter(item => item.active && !item.deleted).length,
+          inactivePhysicalReports: physicalReports.filter(item => !item.active && !item.deleted).length,
+          hasProcedureDraft: !!procedureLibrary.draft,
+          procedureUpdatedBy: procedureLibrary.updatedBy || procedureLibrary.published.publishedBy || "-",
+          procedurePublishedAt: procedureLibrary.published.publishedAt || "",
           latestPlan,
           latestSuggestion
         };
@@ -7852,6 +8479,7 @@
         }
         if (activeManagementTab === "permissions" && !canManagePermissions()) activeManagementTab = "dashboard";
         if (activeManagementTab === "activity" && !canViewActivity()) activeManagementTab = "dashboard";
+        if (activeManagementTab === "procedures" && !canManageProcedures()) activeManagementTab = "dashboard";
         els.managementUserEmail.textContent = currentUser?.email || "Usuário conectado";
         els.managementAccessBadge.textContent = isFullSystemAdmin()
           ? "Administrador total"
@@ -7860,13 +8488,15 @@
             : "Gestão Fase 1";
         els.managementTabs.querySelectorAll("[data-management-tab]").forEach(button => {
           const allowed = (button.dataset.managementTab !== "permissions" || canManagePermissions())
-            && (button.dataset.managementTab !== "activity" || canViewActivity());
+            && (button.dataset.managementTab !== "activity" || canViewActivity())
+            && (button.dataset.managementTab !== "procedures" || canManageProcedures());
           button.classList.toggle("hidden", !allowed);
           button.classList.toggle("is-active", button.dataset.managementTab === activeManagementTab);
         });
         if (activeManagementTab === "profiles") return renderManagementProfiles();
         if (activeManagementTab === "folders") return renderManagementFolders();
         if (activeManagementTab === "plans") return renderManagementPlans();
+        if (activeManagementTab === "procedures") return renderManagementProcedures();
         if (activeManagementTab === "suggestions") return renderManagementSuggestions();
         if (activeManagementTab === "activity") return renderManagementActivity();
         if (activeManagementTab === "permissions") return renderManagementPermissions();
@@ -7886,6 +8516,10 @@
         els.managementContent.innerHTML = `
           <section class="management-dashboard-grid">
             ${managementMetric("Total de perfis", stats.profiles)}
+            ${managementMetric("Versão publicada", stats.publishedProcedureVersion, stats.procedurePublishedAt ? formatDateTime(stats.procedurePublishedAt) : "")}
+            ${managementMetric("Riscos físicos ativos", stats.activePhysicalReports)}
+            ${managementMetric("Riscos físicos inativos", stats.inactivePhysicalReports)}
+            ${managementMetric("Rascunho de Procedimentos", stats.hasProcedureDraft ? "Pendente" : "Não", stats.procedureUpdatedBy)}
             ${managementMetric("Total de pastas", stats.folders)}
             ${managementMetric("Planos de ação", stats.plans)}
             ${managementMetric("Ações cadastradas", stats.actions)}
@@ -7900,7 +8534,7 @@
           <section class="management-panel">
             <div class="management-panel-head"><h2>Próximas fases</h2><span class="management-status-badge">Em desenvolvimento</span></div>
             <div class="management-locked-grid">
-              ${["Gestão de Procedimentos", "Editor de Laudos Físicos", "Configurações globais", "Backups avançados", "Permissões avançadas"].map(title => `
+              ${["Configurações globais", "Backups avançados"].map(title => `
                 <article class="management-locked-card"><strong>${title}</strong><span>Disponível em fase futura${isFullSystemAdmin() ? "." : " apenas para administrador total."}</span></article>
               `).join("")}
             </div>
@@ -7986,6 +8620,624 @@
                 </div></td>
               </tr>`).join("") || '<tr><td colspan="5"><div class="management-empty">Nenhuma pasta encontrada.</div></td></tr>'}</tbody></table></div>
           </section>`;
+      }
+
+      function getProcedureLibrary() {
+        app.procedureLibrary = normalizeProcedureLibrary(app.procedureLibrary);
+        return app.procedureLibrary;
+      }
+
+      function getProcedureCategory(snapshot, categoryId = activeProcedureCategoryId) {
+        return snapshot?.categories?.find(category => category.id === categoryId) || null;
+      }
+
+      function ensureProcedureDraft() {
+        if (!canEditProcedureDrafts()) {
+          alert("Você não tem permissão para editar procedimentos.");
+          return null;
+        }
+        const library = getProcedureLibrary();
+        if (!library.draft) {
+          const now = new Date().toISOString();
+          library.draft = normalizeProcedureSnapshot({
+            ...deepClone(library.published),
+            id: createId(),
+            status: "draft",
+            versionLabel: "",
+            baseVersionId: library.published.id,
+            createdAt: now,
+            updatedAt: now,
+            updatedBy: currentUser?.email || "",
+            publishedAt: "",
+            publishedBy: "",
+            changeSummary: ""
+          });
+          library.updatedAt = now;
+          library.updatedBy = currentUser?.email || "";
+          recordActivity("Criou rascunho de Procedimentos", `Rascunho criado a partir de ${library.published.versionLabel || "versão publicada"}.`);
+          saveManagementChanges();
+        }
+        return library.draft;
+      }
+
+      function touchProcedureDraft() {
+        const library = getProcedureLibrary();
+        if (!library.draft) return;
+        const now = new Date().toISOString();
+        library.draft.updatedAt = now;
+        library.draft.updatedBy = currentUser?.email || "";
+        library.updatedAt = now;
+        library.updatedBy = currentUser?.email || "";
+      }
+
+      function getProcedurePhysicalReports(snapshot, includeDeleted = false) {
+        return (getProcedureCategory(snapshot, "laudos-fisicos")?.items || []).filter(report => includeDeleted || !report.deleted).sort((a, b) => a.order - b.order);
+      }
+
+      function getProcedureReport(snapshot, reportId = activePhysicalReportId) {
+        return getProcedurePhysicalReports(snapshot).find(report => report.id === reportId) || null;
+      }
+
+      function getProcedurePreviewSnapshot(library = getProcedureLibrary()) {
+        if (activeProcedurePreviewSource === "published") return library.published;
+        if (activeProcedurePreviewSource === "version") return library.versions.find(item => item.id === activeProcedureVersionPreviewId)?.snapshot || library.published;
+        return library.draft || library.published;
+      }
+
+      function validatePhysicalReportFlow(report) {
+        const errors = [];
+        const warnings = [];
+        if (!report?.title?.trim()) errors.push("O risco precisa ter título.");
+        const nodes = report?.nodes || {};
+        const ids = Object.keys(nodes);
+        if (!report?.rootNodeId) errors.push("Defina o nó inicial.");
+        else if (!nodes[report.rootNodeId]) errors.push("O nó inicial não existe.");
+        ids.forEach(id => {
+          const node = nodes[id];
+          if (!node.id || node.id !== id) errors.push(`O nó ${id} possui ID inconsistente.`);
+          if (!["question", "info", "result"].includes(node.type)) errors.push(`O nó ${id} possui tipo inválido.`);
+          if (node.type === "result") {
+            if (!(node.blocks || []).some(block => block.text.trim())) errors.push(`O resultado ${id} precisa de ao menos um bloco com texto.`);
+          } else {
+            if (!node.text.trim()) warnings.push(`O nó ${id} não possui texto principal.`);
+            if (!(node.options || []).length) warnings.push(`O nó ${id} não possui opções.`);
+            (node.options || []).forEach(option => {
+              if (!option.label.trim()) errors.push(`Há uma opção sem rótulo no nó ${id}.`);
+              if (!option.nextNodeId || !nodes[option.nextNodeId]) errors.push(`A opção "${option.label || "sem rótulo"}" do nó ${id} aponta para um nó inexistente.`);
+            });
+          }
+        });
+        if (nodes[report?.rootNodeId]) {
+          const reached = new Set();
+          const visiting = new Set();
+          let cycle = false;
+          const walk = id => {
+            if (visiting.has(id)) {
+              cycle = true;
+              return;
+            }
+            if (reached.has(id) || !nodes[id]) return;
+            reached.add(id);
+            visiting.add(id);
+            (nodes[id].options || []).forEach(option => walk(option.nextNodeId));
+            visiting.delete(id);
+          };
+          walk(report.rootNodeId);
+          ids.filter(id => !reached.has(id)).forEach(id => warnings.push(`O nó ${id} está órfão e não é alcançado pelo fluxo inicial.`));
+          if (cycle) warnings.push("O fluxo possui ciclo. Revise para evitar navegação infinita.");
+        }
+        return { errors, warnings };
+      }
+
+      function validateProcedureLibrary(snapshot) {
+        const errors = [];
+        const warnings = [];
+        if (!snapshot?.title?.trim()) errors.push("A biblioteca precisa ter título.");
+        if (!snapshot?.categories?.length) errors.push("A biblioteca precisa ter ao menos uma categoria.");
+        (snapshot?.categories || []).forEach(category => {
+          if (!category.title.trim()) errors.push(`A categoria ${category.id} precisa ter título.`);
+          (category.items || []).filter(report => !report.deleted).forEach(report => {
+            const result = validatePhysicalReportFlow(report);
+            result.errors.forEach(message => errors.push(`${report.title}: ${message}`));
+            result.warnings.forEach(message => warnings.push(`${report.title}: ${message}`));
+          });
+        });
+        return { errors, warnings };
+      }
+
+      function renderProcedureValidation(result) {
+        const messages = [
+          ...result.errors.map(message => ({ message, error: true })),
+          ...result.warnings.map(message => ({ message, error: false }))
+        ];
+        if (!messages.length) return '<div class="management-empty">Validação concluída sem erros ou avisos.</div>';
+        return `<ul class="procedure-validation-list">${messages.map(item => `<li class="${item.error ? "is-error" : ""}">${escapeHtml(item.error ? "Erro: " : "Aviso: ")}${escapeHtml(item.message)}</li>`).join("")}</ul>`;
+      }
+
+      function renderManagementProcedures() {
+        if (!canManageProcedures()) {
+          activeManagementTab = "dashboard";
+          return renderManagementDashboard();
+        }
+        const views = [
+          ["overview", "Visão geral"],
+          ["physical", "Laudos Físicos"],
+          ["preview", "Prévia"],
+          ["publish", "Publicação"],
+          ["versions", "Histórico / Versões"],
+          ["backup", "Backup"]
+        ];
+        const body = activeProcedureAdminView === "physical" ? renderProcedurePhysicalReportsEditor()
+          : activeProcedureAdminView === "preview" ? renderProcedurePreview()
+          : activeProcedureAdminView === "publish" ? renderProcedurePublication()
+          : activeProcedureAdminView === "versions" ? renderProcedureVersions()
+          : activeProcedureAdminView === "backup" ? renderProcedureBackup()
+          : renderProcedureOverview();
+        els.managementContent.innerHTML = `
+          <section class="management-panel">
+            <div class="management-panel-head"><div><h2>Procedimentos</h2><small>Biblioteca publicada, rascunhos e fluxos técnicos.</small></div><span class="management-status-badge">Fase 3</span></div>
+            <nav class="procedure-admin-subtabs">${views.map(([id, label]) => `<button class="management-tab ${activeProcedureAdminView === id ? "is-active" : ""}" type="button" data-management-action="procedure-view" data-procedure-view="${id}">${label}</button>`).join("")}</nav>
+            ${body}
+          </section>`;
+      }
+
+      function renderProcedureOverview() {
+        const library = getProcedureLibrary();
+        const publishedReports = getProcedurePhysicalReports(library.published);
+        return `<div class="procedure-admin-layout">
+          ${library.draft ? '<div class="procedure-admin-card procedure-danger-zone"><strong>Existem alterações em rascunho ainda não publicadas.</strong></div>' : ""}
+          <div class="management-dashboard-grid">
+            ${managementMetric("Versão publicada", library.published.versionLabel || "-")}
+            ${managementMetric("Última publicação", library.published.publishedAt ? formatDateTime(library.published.publishedAt) : "-")}
+            ${managementMetric("Publicado por", library.published.publishedBy || "-")}
+            ${managementMetric("Rascunho pendente", library.draft ? "Sim" : "Não")}
+            ${managementMetric("Categorias", library.published.categories.length)}
+            ${managementMetric("Riscos ativos", publishedReports.filter(report => report.active).length)}
+            ${managementMetric("Riscos inativos", publishedReports.filter(report => !report.active).length)}
+            ${managementMetric("Versões salvas", library.versions.length)}
+          </div>
+          <div class="procedure-admin-card"><div class="management-item-actions">
+            ${canEditProcedureDrafts() ? `<button class="button primary" type="button" data-management-action="${library.draft ? "procedure-view" : "create-procedure-draft"}" ${library.draft ? 'data-procedure-view="physical"' : ""}>${library.draft ? "Editar rascunho" : "Criar rascunho"}</button>` : ""}
+            <button class="button" type="button" data-management-action="preview-published-procedures">Pré-visualizar publicado</button>
+            ${library.draft ? '<button class="button" type="button" data-management-action="preview-draft-procedures">Pré-visualizar rascunho</button>' : ""}
+            ${library.draft && canPublishProcedures() ? '<button class="button primary" type="button" data-management-action="publish-procedure-draft">Publicar alterações</button>' : ""}
+            ${canExportProcedureLibrary() ? '<button class="button" type="button" data-management-action="export-procedure-all">Exportar JSON</button>' : ""}
+            ${canImportProcedureLibrary() ? '<button class="button" type="button" data-management-action="import-procedure-library">Importar JSON</button>' : ""}
+          </div></div>
+        </div>`;
+      }
+
+      function renderProcedurePhysicalReportsEditor() {
+        const library = getProcedureLibrary();
+        const draft = library.draft;
+        if (!draft) return `<div class="management-empty">Crie um rascunho para editar Laudos Físicos.${canEditProcedureDrafts() ? '<br><button class="button primary" type="button" data-management-action="create-procedure-draft">Criar rascunho</button>' : ""}</div>`;
+        const reports = getProcedurePhysicalReports(draft, true);
+        if (!activePhysicalReportId || !reports.some(report => report.id === activePhysicalReportId)) activePhysicalReportId = reports[0]?.id || null;
+        const activeReport = getProcedureReport(draft);
+        return `<div class="procedure-admin-layout">
+          <div class="management-panel-head"><div class="management-item-actions">
+            ${canEditProcedureDrafts() ? '<button class="button primary" type="button" data-management-action="new-physical-report">Novo risco físico</button>' + (canImportProcedureLibrary() ? '<button class="button" type="button" data-management-action="import-physical-report">Importar risco JSON</button>' : "") + '<button class="button" type="button" data-management-action="save-procedure-draft">Salvar rascunho</button>' : ""}
+          </div><span class="management-status-badge">${reports.length} risco(s)</span></div>
+          <div class="procedure-admin-list">${reports.map(report => {
+            const validation = validatePhysicalReportFlow(report);
+            return `<article class="procedure-admin-card ${report.id === activePhysicalReportId ? "is-selected" : ""}">
+              <div class="management-panel-head"><div><strong>${escapeHtml(report.title)}</strong><small>${report.deleted ? "Na lixeira do rascunho" : report.active ? "Ativo" : "Inativo"} · ${Object.keys(report.nodes).length} nós · ${validation.errors.length} erro(s)</small></div>
+                <div class="management-item-actions">
+                  <button class="button" type="button" data-management-action="edit-physical-report" data-report-id="${escapeAttr(report.id)}">Editar fluxo</button>
+                  ${canExportProcedureLibrary() ? `<button class="button" type="button" data-management-action="export-physical-report" data-report-id="${escapeAttr(report.id)}">Exportar</button>` : ""}
+                  ${canEditProcedureDrafts() ? report.deleted ? `<button class="button" type="button" data-management-action="restore-physical-report" data-report-id="${escapeAttr(report.id)}">Restaurar risco</button>` : `<button class="button" type="button" data-management-action="duplicate-physical-report" data-report-id="${escapeAttr(report.id)}">Duplicar</button><button class="button" type="button" data-management-action="toggle-physical-report" data-report-id="${escapeAttr(report.id)}">${report.active ? "Desativar" : "Ativar"}</button><button class="button" type="button" data-management-action="move-physical-report-up" data-report-id="${escapeAttr(report.id)}">↑</button><button class="button" type="button" data-management-action="move-physical-report-down" data-report-id="${escapeAttr(report.id)}">↓</button><button class="button danger" type="button" data-management-action="delete-physical-report" data-report-id="${escapeAttr(report.id)}">Excluir</button>` : ""}
+                </div>
+              </div>
+            </article>`;
+          }).join("") || '<div class="management-empty">Nenhum risco cadastrado.</div>'}</div>
+          ${activeReport ? renderPhysicalReportEditor(activeReport) : ""}
+        </div>`;
+      }
+
+      function renderPhysicalReportEditor(report) {
+        const nodeIds = Object.keys(report.nodes);
+        const validation = validatePhysicalReportFlow(report);
+        const disabled = canEditProcedureDrafts() ? "" : "disabled";
+        return `<section class="procedure-admin-card procedure-admin-editor" data-procedure-report-id="${escapeAttr(report.id)}">
+          <div class="management-panel-head"><h3>Editar fluxo: ${escapeHtml(report.title)}</h3><div class="management-item-actions"><button class="button" type="button" data-management-action="preview-report-flow" data-report-id="${escapeAttr(report.id)}">Pré-visualizar fluxo</button>${canEditProcedureDrafts() ? '<button class="button primary" type="button" data-management-action="save-procedure-draft">Salvar rascunho</button><button class="button" type="button" data-management-action="add-flow-node">Adicionar nó</button>' : ""}</div></div>
+          <div class="procedure-admin-grid">
+            ${procedureField("Título", "title", report.title, "input", disabled)}
+            ${procedureField("Subtítulo", "subtitle", report.subtitle, "input", disabled)}
+            ${procedureField("Descrição", "description", report.description, "textarea", disabled, true)}
+            ${procedureField("Tags separadas por vírgula", "tags", report.tags.join(", "), "input", disabled)}
+            ${procedureField("Nó inicial", "rootNodeId", report.rootNodeId, "select", disabled, false, nodeIds)}
+            ${procedureField("Observação administrativa", "adminNote", report.adminNote, "textarea", disabled, true)}
+          </div>
+          <div class="procedure-node-list">${nodeIds.map(nodeId => renderProcedureNodeEditor(report, report.nodes[nodeId], nodeIds, disabled)).join("")}</div>
+          <div><h3>Validação do fluxo</h3>${renderProcedureValidation(validation)}</div>
+        </section>`;
+      }
+
+      function procedureField(label, field, value, type = "input", disabled = "", wide = false, options = []) {
+        const attrs = `data-procedure-report-field="${field}" ${disabled}`;
+        const control = type === "textarea"
+          ? `<textarea ${attrs}>${escapeHtml(value)}</textarea>`
+          : type === "select"
+            ? `<select ${attrs}>${options.map(option => `<option value="${escapeAttr(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}</select>`
+            : `<input ${attrs} value="${escapeAttr(value)}">`;
+        return `<div class="procedure-field ${wide ? "is-wide" : ""}"><label>${escapeHtml(label)}</label>${control}</div>`;
+      }
+
+      function renderProcedureNodeEditor(report, node, nodeIds, disabled) {
+        return `<article class="procedure-node-card ${report.rootNodeId === node.id ? "is-root" : ""}" data-procedure-node-id="${escapeAttr(node.id)}">
+          <div class="management-panel-head"><div><strong>${escapeHtml(node.title || node.id)}</strong><small>${escapeHtml(node.id)} · ${escapeHtml(node.type)}${report.rootNodeId === node.id ? " · Nó inicial" : ""}</small></div>
+            ${canEditProcedureDrafts() ? `<div class="management-item-actions"><button class="button" type="button" data-management-action="move-flow-node-up" data-node-id="${escapeAttr(node.id)}">↑</button><button class="button" type="button" data-management-action="move-flow-node-down" data-node-id="${escapeAttr(node.id)}">↓</button><button class="button" type="button" data-management-action="set-root-node" data-node-id="${escapeAttr(node.id)}">Definir inicial</button><button class="button" type="button" data-management-action="duplicate-flow-node" data-node-id="${escapeAttr(node.id)}">Duplicar</button><button class="button danger" type="button" data-management-action="delete-flow-node" data-node-id="${escapeAttr(node.id)}">Excluir</button></div>` : ""}
+          </div>
+          <div class="procedure-node-grid">
+            <div class="procedure-field"><label>ID técnico</label><input data-procedure-node-id-field value="${escapeAttr(node.id)}" ${disabled}></div>
+            <div class="procedure-field"><label>Tipo</label><select data-procedure-node-field="type" ${disabled}>${["question", "info", "result"].map(type => `<option value="${type}" ${node.type === type ? "selected" : ""}>${type}</option>`).join("")}</select></div>
+            <div class="procedure-field"><label>Título</label><input data-procedure-node-field="title" value="${escapeAttr(node.title)}" ${disabled}></div>
+            <div class="procedure-field"><label>Tom</label><select data-procedure-node-field="${node.type === "result" ? "tone" : "noteTone"}" ${disabled}>${["normal", "info", "warning", "danger", "success", "muted"].map(tone => `<option value="${tone}" ${(node.type === "result" ? node.tone : node.noteTone) === tone ? "selected" : ""}>${tone}</option>`).join("")}</select></div>
+            <div class="procedure-field is-wide"><label>Texto principal</label><textarea data-procedure-node-field="text" ${disabled}>${escapeHtml(node.text)}</textarea></div>
+            ${node.type !== "result" ? `<div class="procedure-field is-wide"><label>Nota / orientação</label><textarea data-procedure-node-field="note" ${disabled}>${escapeHtml(node.note)}</textarea></div>` : ""}
+          </div>
+          ${node.type === "result" ? `<div class="procedure-result-grid">${node.blocks.map((block, index) => `<div class="procedure-result-block" data-result-index="${index}">
+            <div class="procedure-field"><label>Título do bloco</label><input data-result-field="title" value="${escapeAttr(block.title)}" ${disabled}></div>
+            <div class="procedure-field is-wide"><label>Texto final</label><textarea data-result-field="text" ${disabled}>${escapeHtml(block.text)}</textarea></div>
+            <label class="checkbox-line"><input type="checkbox" data-result-field="copyable" ${block.copyable ? "checked" : ""} ${disabled}> Copiável</label>
+            ${canEditProcedureDrafts() ? `<button class="button danger" type="button" data-management-action="delete-result-block" data-node-id="${escapeAttr(node.id)}" data-result-index="${index}">Excluir bloco</button>` : ""}
+          </div>`).join("")}</div>${canEditProcedureDrafts() ? `<button class="button" type="button" data-management-action="add-result-block" data-node-id="${escapeAttr(node.id)}">Adicionar bloco final</button>` : ""}`
+          : `<div class="procedure-admin-list">${node.options.map((option, index) => `<div class="procedure-option-row" data-option-index="${index}">
+            <div class="procedure-field"><label>Botão / resposta</label><input data-option-field="label" value="${escapeAttr(option.label)}" ${disabled}></div>
+            <div class="procedure-field"><label>Tom</label><select data-option-field="tone" ${disabled}>${["success", "danger", "warning", "info", "muted"].map(tone => `<option value="${tone}" ${option.tone === tone ? "selected" : ""}>${tone}</option>`).join("")}</select></div>
+            <div class="procedure-field"><label>Próximo nó</label><select data-option-field="nextNodeId" ${disabled}><option value="">Selecione...</option>${nodeIds.map(id => `<option value="${escapeAttr(id)}" ${option.nextNodeId === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}</select></div>
+            ${canEditProcedureDrafts() ? `<button class="button danger" type="button" data-management-action="delete-flow-option" data-node-id="${escapeAttr(node.id)}" data-option-index="${index}">Excluir opção</button>` : ""}
+          </div>`).join("")}</div>${canEditProcedureDrafts() ? `<button class="button" type="button" data-management-action="add-flow-option" data-node-id="${escapeAttr(node.id)}">Adicionar opção</button>` : ""}`}
+        </article>`;
+      }
+
+      function renderProcedurePreview() {
+        const library = getProcedureLibrary();
+        const snapshot = getProcedurePreviewSnapshot(library);
+        const reports = getProcedurePhysicalReports(snapshot);
+        if (!activePhysicalReportId || !reports.some(report => report.id === activePhysicalReportId)) activePhysicalReportId = reports[0]?.id || null;
+        const report = getProcedureReport(snapshot);
+        if (!report) return '<div class="management-empty">Nenhum risco disponível para prévia.</div>';
+        const path = activeFlowPreviewState[report.id] || [report.rootNodeId];
+        const nodeId = path[path.length - 1];
+        const node = report.nodes[nodeId] || report.nodes[report.rootNodeId];
+        return `<div class="procedure-preview-shell">
+          <div class="management-panel-head"><div><h3>Prévia: ${escapeHtml(report.title)}</h3><small>${activeProcedurePreviewSource === "published" ? "Publicado" : activeProcedurePreviewSource === "version" ? "Versão histórica" : "Rascunho"}</small></div><div class="management-item-actions"><select data-procedure-preview-report>${reports.map(item => `<option value="${escapeAttr(item.id)}" ${item.id === report.id ? "selected" : ""}>${escapeHtml(item.title)}</option>`).join("")}</select><button class="button" type="button" data-management-action="preview-flow-back" ${path.length <= 1 ? "disabled" : ""}>Voltar</button><button class="button" type="button" data-management-action="preview-flow-reset">Reiniciar</button></div></div>
+          ${renderProcedurePreviewNode(report, node)}
+        </div>`;
+      }
+
+      function renderProcedurePreviewNode(report, node) {
+        if (!node) return '<div class="management-empty">Nó não encontrado.</div>';
+        return `<article class="procedure-preview-node" data-node-type="${escapeAttr(node.type)}">
+          <h3>${escapeHtml(node.title || report.title)}</h3>
+          ${node.text ? `<p>${escapeHtml(node.text)}</p>` : ""}
+          ${node.note ? `<p><strong>${escapeHtml(node.note)}</strong></p>` : ""}
+          ${node.type === "result" ? node.blocks.filter(block => block.text).map((block, index) => `<div class="procedure-result-block"><strong>${escapeHtml(block.title)}</strong><p>${escapeHtml(block.text)}</p>${block.copyable ? `<button class="button" type="button" data-management-action="copy-preview-result" data-block-index="${index}">Copiar texto</button>` : ""}</div>`).join("")
+            : `<div class="management-item-actions">${node.options.map(option => `<button class="button" type="button" data-management-action="preview-flow-choice" data-next-node-id="${escapeAttr(option.nextNodeId)}">${escapeHtml(option.label)}</button>`).join("")}</div>`}
+        </article>`;
+      }
+
+      function renderProcedurePublication() {
+        const library = getProcedureLibrary();
+        const validation = library.draft ? validateProcedureLibrary(library.draft) : { errors: [], warnings: [] };
+        const publishedIds = new Set(getProcedurePhysicalReports(library.published).map(report => report.id));
+        const publishedMap = new Map(getProcedurePhysicalReports(library.published).map(report => [report.id, report]));
+        const draftReports = library.draft ? getProcedurePhysicalReports(library.draft) : [];
+        const added = draftReports.filter(report => !publishedIds.has(report.id)).length;
+        const removed = getProcedurePhysicalReports(library.published).filter(report => !draftReports.some(item => item.id === report.id)).length;
+        const changed = draftReports.filter(report => publishedMap.has(report.id) && JSON.stringify(report) !== JSON.stringify(publishedMap.get(report.id))).length;
+        const deactivated = draftReports.filter(report => !report.active && publishedMap.get(report.id)?.active).length;
+        return `<div class="procedure-admin-layout">
+          <div class="procedure-admin-card"><strong>Publicação atual: ${escapeHtml(library.published.versionLabel || "-")}</strong><p>${escapeHtml(library.published.changeSummary || "Sem resumo.")}</p></div>
+          ${library.draft ? `<div class="procedure-admin-card"><div class="procedure-admin-grid">${managementMetric("Riscos adicionados", added)}${managementMetric("Riscos alterados", changed)}${managementMetric("Riscos desativados", deactivated)}${managementMetric("Riscos removidos", removed)}${managementMetric("Riscos no rascunho", draftReports.length)}</div><div class="procedure-field"><label>Resumo da alteração</label><textarea id="procedureChangeSummary" placeholder="Descreva o que mudou..."></textarea></div>${renderProcedureValidation(validation)}${canPublishProcedures() ? '<button class="button primary" type="button" data-management-action="publish-procedure-draft">Publicar alterações</button>' : ""}</div>` : '<div class="management-empty">Não há rascunho para publicar.</div>'}
+        </div>`;
+      }
+
+      function renderProcedureVersions() {
+        const versions = [...getProcedureLibrary().versions].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+        return `<div class="procedure-version-list">${versions.map(version => `<article class="procedure-version-card">
+          <div class="management-panel-head"><div><strong>${escapeHtml(version.versionLabel)}</strong><small>${escapeHtml(formatDateTime(version.publishedAt))} · ${escapeHtml(version.publishedBy || "-")}</small></div><div class="management-item-actions"><button class="button" type="button" data-management-action="preview-procedure-version" data-version-id="${escapeAttr(version.id)}">Visualizar</button><button class="button" type="button" data-management-action="export-procedure-version" data-version-id="${escapeAttr(version.id)}">Exportar</button>${canRestoreProcedureVersions() ? `<button class="button" type="button" data-management-action="restore-procedure-version" data-version-id="${escapeAttr(version.id)}">Restaurar como rascunho</button>` : ""}${canRestoreProcedureVersions() && canPublishProcedures() ? `<button class="button primary" type="button" data-management-action="restore-publish-procedure-version" data-version-id="${escapeAttr(version.id)}">Restaurar e publicar</button>` : ""}</div></div>
+          <p>${escapeHtml(version.changeSummary || "Sem resumo.")}</p>
+        </article>`).join("") || '<div class="management-empty">Nenhuma versão histórica salva ainda.</div>'}</div>`;
+      }
+
+      function renderProcedureBackup() {
+        const library = getProcedureLibrary();
+        return `<div class="procedure-admin-layout">
+          <div class="procedure-admin-card"><h3>Exportar</h3><p>Baixe dados publicados, rascunho ou o backup completo com histórico.</p><div class="management-item-actions">${canExportProcedureLibrary() ? '<button class="button" type="button" data-management-action="export-procedure-published">Exportar publicado</button><button class="button" type="button" data-management-action="export-procedure-draft" ' + (library.draft ? "" : "disabled") + '>Exportar rascunho</button><button class="button primary" type="button" data-management-action="export-procedure-all">Exportar backup completo</button>' : ""}</div></div>
+          <div class="procedure-admin-card"><h3>Importar</h3><p>A importação sempre é aplicada como rascunho e nunca publica automaticamente.</p>${canImportProcedureLibrary() ? '<button class="button primary" type="button" data-management-action="import-procedure-library">Importar biblioteca JSON</button>' : ""}</div>
+          ${library.draft && canEditProcedureDrafts() ? '<div class="procedure-admin-card procedure-danger-zone"><h3>Descartar rascunho</h3><p>A versão publicada continuará intacta.</p><button class="button danger" type="button" data-management-action="discard-procedure-draft">Descartar rascunho</button></div>' : ""}
+        </div>`;
+      }
+
+      function handleManagementProcedureInput(event) {
+        if (activeManagementTab !== "procedures") return;
+        if (event.target.matches("[data-procedure-preview-report]")) {
+          activePhysicalReportId = event.target.value;
+          const library = getProcedureLibrary();
+          const snapshot = getProcedurePreviewSnapshot(library);
+          const report = getProcedureReport(snapshot, activePhysicalReportId);
+          activeFlowPreviewState[activePhysicalReportId] = report ? [report.rootNodeId] : [];
+          renderManagementProcedures();
+          return;
+        }
+        if (!canEditProcedureDrafts()) return;
+        const draft = getProcedureLibrary().draft;
+        if (!draft) return;
+        const reportElement = event.target.closest("[data-procedure-report-id]");
+        const report = reportElement && getProcedureReport(draft, reportElement.dataset.procedureReportId);
+        if (!report) return;
+        const reportField = event.target.dataset.procedureReportField;
+        if (reportField) {
+          report[reportField] = reportField === "tags"
+            ? event.target.value.split(",").map(item => item.trim()).filter(Boolean)
+            : event.target.value;
+          if (reportField === "rootNodeId") activeFlowPreviewState[report.id] = [];
+        }
+        const nodeElement = event.target.closest("[data-procedure-node-id]");
+        const node = nodeElement && report.nodes[nodeElement.dataset.procedureNodeId];
+        if (node && event.target.matches("[data-procedure-node-id-field]")) {
+          const oldId = node.id;
+          const nextId = event.target.value.trim().replace(/\s+/g, "-");
+          if (!nextId || (nextId !== oldId && report.nodes[nextId])) {
+            event.target.value = oldId;
+            return alert("Use um ID técnico único.");
+          }
+          if (nextId !== oldId) {
+            delete report.nodes[oldId];
+            node.id = nextId;
+            report.nodes[nextId] = node;
+            if (report.rootNodeId === oldId) report.rootNodeId = nextId;
+            Object.values(report.nodes).forEach(item => (item.options || []).forEach(option => {
+              if (option.nextNodeId === oldId) option.nextNodeId = nextId;
+            }));
+            activePhysicalReportId = report.id;
+            touchProcedureDraft();
+            renderManagementProcedures();
+            return;
+          }
+        }
+        if (node && event.target.dataset.procedureNodeField) {
+          const field = event.target.dataset.procedureNodeField;
+          node[field] = event.target.value;
+          if (field === "type") {
+            if (node.type === "result") {
+              node.options = [];
+              if (!node.blocks.length) node.blocks = [normalizeResultBlock({ title: "Conclusão", text: "" })];
+            } else {
+              node.blocks = [];
+              if (!node.options.length) node.options = [normalizeFlowOption({ label: "PRÓXIMO", tone: "info", nextNodeId: "" })];
+            }
+            touchProcedureDraft();
+            renderManagementProcedures();
+            return;
+          }
+        }
+        const optionElement = event.target.closest("[data-option-index]");
+        if (node && optionElement && event.target.dataset.optionField) {
+          const option = node.options[Number(optionElement.dataset.optionIndex)];
+          if (option) option[event.target.dataset.optionField] = event.target.value;
+        }
+        const resultElement = event.target.closest("[data-result-index]");
+        if (node && resultElement && event.target.dataset.resultField) {
+          const block = node.blocks[Number(resultElement.dataset.resultIndex)];
+          if (block) block[event.target.dataset.resultField] = event.target.dataset.resultField === "copyable" ? event.target.checked : event.target.value;
+        }
+        report.updatedAt = new Date().toISOString();
+        report.updatedBy = currentUser?.email || "";
+        touchProcedureDraft();
+      }
+
+      function saveProcedureDraft() {
+        if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+        const draft = getProcedureLibrary().draft;
+        if (!draft) return alert("Crie um rascunho antes de salvar.");
+        touchProcedureDraft();
+        const validation = validateProcedureLibrary(draft);
+        recordActivity("Editou Procedimentos", `Salvou o rascunho com ${validation.errors.length} erro(s) e ${validation.warnings.length} aviso(s).`);
+        saveManagementChanges();
+        renderManagementProcedures();
+        alert(validation.errors.length ? "Rascunho salvo. Revise os erros antes de publicar." : "Rascunho salvo.");
+      }
+
+      function createNewPhysicalReport() {
+        const draft = ensureProcedureDraft();
+        if (!draft) return;
+        const category = getProcedureCategory(draft, "laudos-fisicos");
+        const report = createQualitativePhysicalReport(`novo-risco-${Date.now().toString(36)}`, "Novo risco físico", category.items.length + 1, "HÁ EXPOSIÇÃO HABITUAL E RELEVANTE AO AGENTE?", "Referência técnica a definir");
+        report.updatedBy = currentUser?.email || "";
+        category.items.push(report);
+        activePhysicalReportId = report.id;
+        touchProcedureDraft();
+        recordActivity("Criou risco físico", report.title);
+        saveManagementChanges();
+        renderManagementProcedures();
+      }
+
+      function duplicatePhysicalReport(report) {
+        if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+        const draft = ensureProcedureDraft();
+        if (!draft || !report) return;
+        const category = getProcedureCategory(draft, "laudos-fisicos");
+        const copy = normalizePhysicalReport(deepClone(report), category.items.length);
+        copy.id = `${report.id}-copia-${Date.now().toString(36)}`;
+        copy.title = `${report.title} (cópia)`;
+        copy.order = category.items.length + 1;
+        copy.createdAt = new Date().toISOString();
+        copy.updatedAt = copy.createdAt;
+        copy.updatedBy = currentUser?.email || "";
+        category.items.push(copy);
+        activePhysicalReportId = copy.id;
+        touchProcedureDraft();
+        recordActivity("Duplicou risco físico", copy.title);
+        saveManagementChanges();
+        renderManagementProcedures();
+      }
+
+      function movePhysicalReport(report, direction) {
+        if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+        const category = getProcedureCategory(getProcedureLibrary().draft, "laudos-fisicos");
+        if (!category || !report) return;
+        const visible = category.items.filter(item => !item.deleted).sort((a, b) => a.order - b.order);
+        const index = visible.findIndex(item => item.id === report.id);
+        const target = direction === "up" ? index - 1 : index + 1;
+        if (index < 0 || !visible[target]) return;
+        [visible[index].order, visible[target].order] = [visible[target].order, visible[index].order];
+        touchProcedureDraft();
+        saveManagementChanges();
+        renderManagementProcedures();
+      }
+
+      function addFlowNode(report) {
+        if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+        let id = `novo-no-${Object.keys(report.nodes).length + 1}`;
+        while (report.nodes[id]) id += "-novo";
+        report.nodes[id] = normalizeFlowNode({ id, type: "question", title: "Nova pergunta", text: "Digite a pergunta", options: [] }, id);
+        touchProcedureDraft();
+        renderManagementProcedures();
+      }
+
+      function moveProcedureNode(report, nodeId, direction) {
+        if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+        const entries = Object.entries(report.nodes);
+        const index = entries.findIndex(([id]) => id === nodeId);
+        const target = direction === "up" ? index - 1 : index + 1;
+        if (index < 0 || !entries[target]) return;
+        [entries[index], entries[target]] = [entries[target], entries[index]];
+        report.nodes = Object.fromEntries(entries);
+        touchProcedureDraft();
+        renderManagementProcedures();
+      }
+
+      function publishProcedureDraft(changeSummary = "") {
+        if (!canPublishProcedures()) return alert("Você não tem permissão para publicar procedimentos.");
+        const library = getProcedureLibrary();
+        if (!library.draft) return alert("Não há rascunho para publicar.");
+        const validation = validateProcedureLibrary(library.draft);
+        if (validation.errors.length) {
+          activeProcedureAdminView = "publish";
+          renderManagementProcedures();
+          return alert("A publicação foi bloqueada. Corrija os erros críticos indicados.");
+        }
+        if (validation.warnings.length && !confirm(`O rascunho possui ${validation.warnings.length} aviso(s). Deseja publicar mesmo assim?`)) return;
+        const summary = changeSummary.trim() || prompt("Resumo da alteração:", "") || "Publicação de Procedimentos";
+        const now = new Date().toISOString();
+        if (library.published) {
+          library.versions.push(normalizeProcedureVersion({
+            id: createId(),
+            versionLabel: library.published.versionLabel || "versão anterior",
+            publishedAt: library.published.publishedAt || now,
+            publishedBy: library.published.publishedBy || "",
+            changeSummary: library.published.changeSummary || "",
+            snapshot: deepClone(library.published)
+          }));
+          library.versions = library.versions.slice(-25);
+        }
+        const currentNumber = Number(String(library.published?.versionLabel || "v0").replace(/\D/g, "")) || 0;
+        const published = normalizeProcedureSnapshot({
+          ...deepClone(library.draft),
+          id: createId(),
+          status: "published",
+          versionLabel: `v${currentNumber + 1}`,
+          publishedAt: now,
+          publishedBy: currentUser?.email || "",
+          updatedAt: now,
+          updatedBy: currentUser?.email || "",
+          changeSummary: summary
+        });
+        library.published = published;
+        library.activePublishedVersionId = published.id;
+        library.draft = null;
+        library.updatedAt = now;
+        library.updatedBy = currentUser?.email || "";
+        recordActivity("Publicou Procedimentos", `${published.versionLabel}: ${summary}`);
+        saveManagementChanges();
+        loadProceduresFrame(true);
+        activeProcedureAdminView = "overview";
+        renderManagementProcedures();
+        alert(`Procedimentos publicados como ${published.versionLabel}.`);
+      }
+
+      function restoreProcedureVersionAsDraft(versionId, publishAfter = false) {
+        if (!canRestoreProcedureVersions()) return alert("Você não tem permissão para restaurar versões.");
+        const library = getProcedureLibrary();
+        const version = library.versions.find(item => item.id === versionId);
+        if (!version) return;
+        if (library.draft && !confirm("Substituir o rascunho atual pela versão selecionada?")) return;
+        const now = new Date().toISOString();
+        library.draft = normalizeProcedureSnapshot({
+          ...deepClone(version.snapshot),
+          id: createId(),
+          status: "draft",
+          versionLabel: "",
+          baseVersionId: version.snapshot.id,
+          createdAt: now,
+          updatedAt: now,
+          updatedBy: currentUser?.email || "",
+          publishedAt: "",
+          publishedBy: ""
+        });
+        touchProcedureDraft();
+        recordActivity("Restaurou versão de Procedimentos", `Restaurou ${version.versionLabel} como rascunho.`);
+        saveManagementChanges();
+        if (publishAfter) return publishProcedureDraft(`Restauração da versão ${version.versionLabel}`);
+        activeProcedureAdminView = "physical";
+        renderManagementProcedures();
+      }
+
+      function exportProcedureJson(payload, fileName, action = "Exportou Procedimentos") {
+        if (!canExportProcedureLibrary()) return alert("Você não tem permissão para exportar Procedimentos.");
+        downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" }), fileName);
+        recordActivity(action, fileName);
+        saveApp({ activityId: app.activityLog[0]?.id });
+      }
+
+      function importProcedureJson(mode = "library") {
+        if (!canImportProcedureLibrary()) return alert("Você não tem permissão para importar Procedimentos.");
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json,.json";
+        input.addEventListener("change", async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          try {
+            const raw = JSON.parse(await file.text());
+            if (mode === "report") {
+              const draft = ensureProcedureDraft();
+              const category = getProcedureCategory(draft, "laudos-fisicos");
+              const report = normalizePhysicalReport(raw.report || raw);
+              if (!confirm(`Importar o risco "${report.title}" como rascunho?`)) return;
+              if (category.items.some(item => item.id === report.id)) report.id = `${report.id}-importado-${Date.now().toString(36)}`;
+              report.order = category.items.length + 1;
+              category.items.push(report);
+              activePhysicalReportId = report.id;
+              touchProcedureDraft();
+              recordActivity("Importou risco físico", report.title);
+            } else {
+              const snapshot = raw.published || raw.draft || raw.snapshot || raw;
+              const normalized = normalizeProcedureSnapshot({ ...snapshot, status: "draft" });
+              const validation = validateProcedureLibrary(normalized);
+              if (validation.errors.length && !confirm(`O arquivo possui ${validation.errors.length} erro(s). Importar como rascunho para correção?`)) return;
+              if (!validation.errors.length && !confirm(`Importar ${normalized.categories.length} categoria(s) como rascunho?`)) return;
+              const library = getProcedureLibrary();
+              library.draft = normalized;
+              library.draft.id = createId();
+              library.draft.baseVersionId = library.published.id;
+              library.draft.updatedBy = currentUser?.email || "";
+              touchProcedureDraft();
+              recordActivity("Importou Procedimentos", file.name);
+            }
+            saveManagementChanges();
+            activeProcedureAdminView = "physical";
+            renderManagementProcedures();
+            alert("Importação aplicada como rascunho.");
+          } catch (error) {
+            console.error(error);
+            alert("Não foi possível importar o JSON.");
+          }
+        }, { once: true });
+        input.click();
       }
 
       function renderManagementSuggestions() {
@@ -8094,6 +9346,16 @@
           const dependency = els.managementPermissionCheckboxes.querySelector(`[data-permission-key="${key}"]`);
           if (dependency) dependency.checked = true;
         });
+        const key = checkbox.dataset.permissionKey;
+        const dependencies = key === "publishProcedures"
+          ? ["manageProcedures", "editProcedureDrafts"]
+          : ["restoreProcedureVersions", "editProcedureDrafts", "importProcedureLibrary", "exportProcedureLibrary"].includes(key)
+            ? ["manageProcedures"]
+            : [];
+        dependencies.forEach(dependencyKey => {
+          const dependency = els.managementPermissionCheckboxes.querySelector(`[data-permission-key="${dependencyKey}"]`);
+          if (dependency) dependency.checked = true;
+        });
       }
 
       function saveManagementPermissionFromModal(event) {
@@ -8138,6 +9400,7 @@
         if (!canAccessManagementPhase1()) return showAppSelector();
         const button = event.target.closest("[data-management-tab]");
         if (!button) return;
+        if (button.dataset.managementTab === "procedures" && !canManageProcedures()) return alert("Você não tem permissão para gerenciar Procedimentos.");
         if (button.dataset.managementTab === "permissions" && !canManagePermissions()) return alert("Você não tem permissão para gerenciar permissões.");
         if (button.dataset.managementTab === "activity" && !canViewActivity()) return alert("Você não tem permissão para visualizar atividades.");
         activeManagementTab = button.dataset.managementTab;
@@ -8424,6 +9687,185 @@
         const suggestionCard = button.closest("[data-improvement-id]");
         const suggestion = suggestionCard && app.improvementSuggestions.find(item => item.id === suggestionCard.dataset.improvementId);
         const permission = (app.managementPermissions?.users || []).find(item => item.id === button.dataset.permissionId);
+        const procedureLibrary = getProcedureLibrary();
+        const procedureDraft = procedureLibrary.draft;
+        const procedureReportId = button.dataset.reportId || activePhysicalReportId;
+        const procedureReport = procedureDraft && getProcedureCategory(procedureDraft, "laudos-fisicos")?.items?.find(item => item.id === procedureReportId);
+        const procedureNode = procedureReport && procedureReport.nodes[button.dataset.nodeId];
+        const procedureEditActions = new Set(["new-physical-report", "duplicate-physical-report", "toggle-physical-report", "delete-physical-report", "restore-physical-report", "move-physical-report-up", "move-physical-report-down", "add-flow-node", "move-flow-node-up", "move-flow-node-down", "set-root-node", "duplicate-flow-node", "delete-flow-node", "add-flow-option", "delete-flow-option", "add-result-block", "delete-result-block", "discard-procedure-draft"]);
+        if (procedureEditActions.has(action) && !canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+
+        if (action === "procedure-view") {
+          activeProcedureAdminView = button.dataset.procedureView || "overview";
+          return renderManagementProcedures();
+        }
+        if (action === "create-procedure-draft") {
+          ensureProcedureDraft();
+          activeProcedureAdminView = "physical";
+          return renderManagementProcedures();
+        }
+        if (action === "save-procedure-draft") return saveProcedureDraft();
+        if (action === "new-physical-report") return createNewPhysicalReport();
+        if (action === "edit-physical-report" && button.dataset.reportId) {
+          activePhysicalReportId = button.dataset.reportId;
+          activeProcedureAdminView = "physical";
+          return renderManagementProcedures();
+        }
+        if (action === "duplicate-physical-report" && procedureReport) return duplicatePhysicalReport(procedureReport);
+        if (action === "toggle-physical-report" && procedureReport) {
+          if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+          procedureReport.active = !procedureReport.active;
+          procedureReport.updatedAt = new Date().toISOString();
+          procedureReport.updatedBy = currentUser?.email || "";
+          touchProcedureDraft();
+          recordActivity(procedureReport.active ? "Ativou risco físico" : "Desativou risco físico", procedureReport.title);
+          saveManagementChanges();
+          return renderManagementProcedures();
+        }
+        if (action === "delete-physical-report" && procedureReport) {
+          if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+          if (prompt('Digite EXCLUIR RISCO para confirmar:') !== "EXCLUIR RISCO") return;
+          procedureReport.deleted = true;
+          procedureReport.active = false;
+          touchProcedureDraft();
+          recordActivity("Excluiu risco físico", procedureReport.title);
+          saveManagementChanges();
+          activePhysicalReportId = null;
+          return renderManagementProcedures();
+        }
+        if (action === "restore-physical-report" && procedureReport) {
+          procedureReport.deleted = false;
+          procedureReport.active = true;
+          procedureReport.updatedAt = new Date().toISOString();
+          procedureReport.updatedBy = currentUser?.email || "";
+          touchProcedureDraft();
+          recordActivity("Ativou risco físico", `Restaurou ${procedureReport.title} na lixeira do rascunho.`);
+          saveManagementChanges();
+          activePhysicalReportId = procedureReport.id;
+          return renderManagementProcedures();
+        }
+        if (action === "move-physical-report-up" && procedureReport) return movePhysicalReport(procedureReport, "up");
+        if (action === "move-physical-report-down" && procedureReport) return movePhysicalReport(procedureReport, "down");
+        if (action === "add-flow-node" && procedureReport) return addFlowNode(procedureReport);
+        if (action === "move-flow-node-up" && procedureNode) return moveProcedureNode(procedureReport, procedureNode.id, "up");
+        if (action === "move-flow-node-down" && procedureNode) return moveProcedureNode(procedureReport, procedureNode.id, "down");
+        if (action === "set-root-node" && procedureNode) {
+          if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+          procedureReport.rootNodeId = procedureNode.id;
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "duplicate-flow-node" && procedureNode) {
+          if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+          let id = `${procedureNode.id}-copia`;
+          while (procedureReport.nodes[id]) id += "-nova";
+          procedureReport.nodes[id] = normalizeFlowNode({ ...deepClone(procedureNode), id }, id);
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "delete-flow-node" && procedureNode) {
+          if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+          if (!confirm(`Excluir o nó "${procedureNode.id}"?`)) return;
+          delete procedureReport.nodes[procedureNode.id];
+          if (procedureReport.rootNodeId === procedureNode.id) procedureReport.rootNodeId = Object.keys(procedureReport.nodes)[0] || "";
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "add-flow-option" && procedureNode) {
+          procedureNode.options.push(normalizeFlowOption({ label: "NOVA OPÇÃO", tone: "info", nextNodeId: "" }, procedureNode.options.length));
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "delete-flow-option" && procedureNode) {
+          procedureNode.options.splice(Number(button.dataset.optionIndex), 1);
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "add-result-block" && procedureNode) {
+          procedureNode.blocks.push(normalizeResultBlock({ title: "Novo bloco", text: "", copyable: true }, procedureNode.blocks.length));
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "delete-result-block" && procedureNode) {
+          procedureNode.blocks.splice(Number(button.dataset.resultIndex), 1);
+          touchProcedureDraft();
+          return renderManagementProcedures();
+        }
+        if (action === "preview-report-flow" && procedureReport) {
+          activePhysicalReportId = procedureReport.id;
+          activeProcedurePreviewSource = "draft";
+          activeFlowPreviewState[procedureReport.id] = [procedureReport.rootNodeId];
+          activeProcedureAdminView = "preview";
+          return renderManagementProcedures();
+        }
+        if (action === "preview-published-procedures") {
+          activeProcedurePreviewSource = "published";
+          activePhysicalReportId = null;
+          activeProcedureAdminView = "preview";
+          return renderManagementProcedures();
+        }
+        if (action === "preview-draft-procedures") {
+          activeProcedurePreviewSource = "draft";
+          activePhysicalReportId = null;
+          activeProcedureAdminView = "preview";
+          return renderManagementProcedures();
+        }
+        if (action === "preview-procedure-version") {
+          activeProcedurePreviewSource = "version";
+          activeProcedureVersionPreviewId = button.dataset.versionId || "";
+          activePhysicalReportId = null;
+          activeProcedureAdminView = "preview";
+          return renderManagementProcedures();
+        }
+        if (action === "preview-flow-choice") {
+          const snapshot = getProcedurePreviewSnapshot(procedureLibrary);
+          const report = getProcedureReport(snapshot);
+          if (!report || !report.nodes[button.dataset.nextNodeId]) return;
+          const path = activeFlowPreviewState[report.id] || [report.rootNodeId];
+          path.push(button.dataset.nextNodeId);
+          activeFlowPreviewState[report.id] = path;
+          return renderManagementProcedures();
+        }
+        if (action === "preview-flow-back" || action === "preview-flow-reset") {
+          const snapshot = getProcedurePreviewSnapshot(procedureLibrary);
+          const report = getProcedureReport(snapshot);
+          if (!report) return;
+          const path = activeFlowPreviewState[report.id] || [report.rootNodeId];
+          activeFlowPreviewState[report.id] = action === "preview-flow-reset" ? [report.rootNodeId] : path.slice(0, -1);
+          if (!activeFlowPreviewState[report.id].length) activeFlowPreviewState[report.id] = [report.rootNodeId];
+          return renderManagementProcedures();
+        }
+        if (action === "copy-preview-result") {
+          const snapshot = getProcedurePreviewSnapshot(procedureLibrary);
+          const report = getProcedureReport(snapshot);
+          const path = report && (activeFlowPreviewState[report.id] || [report.rootNodeId]);
+          const node = report && report.nodes[path[path.length - 1]];
+          const block = node?.blocks?.[Number(button.dataset.blockIndex)];
+          if (block) await copyTextToClipboard(block.text);
+          return;
+        }
+        if (action === "publish-procedure-draft") return publishProcedureDraft(document.getElementById("procedureChangeSummary")?.value || "");
+        if (action === "discard-procedure-draft") {
+          if (!canEditProcedureDrafts()) return alert("Você não tem permissão para editar procedimentos.");
+          if (prompt('Digite DESCARTAR para confirmar:') !== "DESCARTAR") return;
+          procedureLibrary.draft = null;
+          activePhysicalReportId = null;
+          saveManagementChanges();
+          activeProcedureAdminView = "overview";
+          return renderManagementProcedures();
+        }
+        if (action === "restore-procedure-version") return restoreProcedureVersionAsDraft(button.dataset.versionId, false);
+        if (action === "restore-publish-procedure-version") return restoreProcedureVersionAsDraft(button.dataset.versionId, true);
+        if (action === "export-procedure-all") return exportProcedureJson(procedureLibrary, `sats-procedimentos-backup-${new Date().toISOString().slice(0, 10)}.json`);
+        if (action === "export-procedure-published") return exportProcedureJson(procedureLibrary.published, `sats-procedimentos-publicado-${new Date().toISOString().slice(0, 10)}.json`);
+        if (action === "export-procedure-draft" && procedureLibrary.draft) return exportProcedureJson(procedureLibrary.draft, `sats-procedimentos-rascunho-${new Date().toISOString().slice(0, 10)}.json`);
+        if (action === "export-procedure-version") {
+          const version = procedureLibrary.versions.find(item => item.id === button.dataset.versionId);
+          if (version) return exportProcedureJson(version, `sats-procedimentos-${version.versionLabel}.json`);
+        }
+        if (action === "export-physical-report" && procedureReport) return exportProcedureJson(procedureReport, `sats-risco-${procedureReport.id}.json`, "Exportou risco físico");
+        if (action === "import-procedure-library") return importProcedureJson("library");
+        if (action === "import-physical-report") return importProcedureJson("report");
 
         if (action === "locate-profile" && profile) return alert(`Perfil: ${profile.name}\nEmpresa: ${profile.company || "-"}\nPlanos: ${getManagementPlansForProfile(profile).length}`);
         if (action === "locate-plan" && profile && plan) {
@@ -8579,8 +10021,12 @@
 
       function handlePortalMessage(event) {
         if (event.source !== els.proceduresFrame.contentWindow) return;
-        if (!event.data || event.data.type !== "sats:show-app-selector") return;
-        showAppSelector();
+        if (!event.data) return;
+        if (event.data.type === "sats:show-app-selector") return showAppSelector();
+        if (event.data.type === "sats:open-legacy-procedures") {
+          els.proceduresFrame.srcdoc = getDefaultProceduresHtml();
+          els.proceduresFrame.dataset.loaded = "legacy";
+        }
       }
 
       function showProfiles() {
@@ -12865,6 +14311,7 @@
         if (!options.force && hasRecentLocalActivity()) return;
         if (!options.allowWhileEditing && isUserEditing()) return;
         app = restoreLocalNavigation(normalizeApp(row.data), captureLocalNavigation());
+        if (selectedPortalApp === "procedures" && els.proceduresFrame) els.proceduresFrame.dataset.loaded = "";
         lastSharedUpdatedAt = row.updated_at || "";
         writeLocalSharedCache(app, lastSharedUpdatedAt);
         selectedActions.clear();
