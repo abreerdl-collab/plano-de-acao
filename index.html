@@ -14683,6 +14683,1071 @@ renderList("");
       function escapeAttr(value) {
         return escapeHtml(value).replace(/`/g, "&#096;");
       }
+      /* SATS PATCH - Gestão de templates do Plano de Ação */
+      (function installActionPlanTemplateManagementPatch() {
+        if (window.__SATS_ACTION_TEMPLATE_PATCH_APPLIED__) return;
+        window.__SATS_ACTION_TEMPLATE_PATCH_APPLIED__ = true;
+
+        MANAGEMENT_PERMISSION_KEYS.push("manageActionPlanTemplates");
+        MANAGEMENT_PERMISSION_LABELS.manageActionPlanTemplates = "Gerenciar templates do Plano de Ação";
+        [
+          "Criou template de Plano de Ação",
+          "Editou template de Plano de Ação",
+          "Duplicou template de Plano de Ação",
+          "Ativou template de Plano de Ação",
+          "Desativou template de Plano de Ação",
+          "Excluiu template de Plano de Ação",
+          "Restaurou template padrão de Plano de Ação",
+          "Aplicou template de Plano de Ação"
+        ].forEach(action => LOGGED_ACTIVITY_ACTIONS.add(action));
+
+        let activeManagementPlansView = "plans";
+        const originalCreateEmptyApp = createEmptyApp;
+        const originalNormalizeApp = normalizeApp;
+        const originalSharedAppData = sharedAppData;
+        const originalCreatePlanData = createPlanData;
+        const originalRenderManagementPlans = renderManagementPlans;
+        const originalRenderEditor = typeof renderEditor === "function" ? renderEditor : null;
+
+        injectActionTemplateStyles();
+        ensureActionTemplateModal();
+
+        createEmptyApp = function patchedCreateEmptyApp() {
+          const data = originalCreateEmptyApp();
+          data.actionPlanTemplates = normalizeActionPlanTemplates(data.actionPlanTemplates);
+          return data;
+        };
+
+        normalizeApp = function patchedNormalizeApp(raw = {}) {
+          const data = originalNormalizeApp(raw || {});
+          data.actionPlanTemplates = normalizeActionPlanTemplates(raw.actionPlanTemplates || raw.action_plan_templates || data.actionPlanTemplates);
+          return data;
+        };
+
+        sharedAppData = function patchedSharedAppData(source = app) {
+          const data = originalSharedAppData(source);
+          data.actionPlanTemplates = normalizeActionPlanTemplates(source && source.actionPlanTemplates);
+          return data;
+        };
+
+        createPlanData = function patchedCreatePlanData(options = {}) {
+          if (!options.useTemplate) return originalCreatePlanData(options);
+          const data = originalCreatePlanData(options);
+          const template = getDefaultActionPlanTemplate();
+          if (template) {
+            if (Array.isArray(template.rows) && template.rows.length) data.actions = cloneTemplateRows(template.rows);
+            if (Array.isArray(template.equipmentRows)) data.equipment = cloneTemplateEquipmentRows(template.equipmentRows);
+            if (Array.isArray(template.trainingRows)) data.trainings = cloneTemplateTrainingRows(template.trainingRows);
+          }
+          return data;
+        };
+
+        renderManagementPlans = function patchedRenderManagementPlans() {
+          ensureActionPlanTemplates();
+          if (activeManagementPlansView === "templates") {
+            renderManagementPlanTemplates();
+            return;
+          }
+          originalRenderManagementPlans();
+          prependPlanManagementSubtabs();
+        };
+
+        if (originalRenderEditor) {
+          renderEditor = function patchedRenderEditor() {
+            originalRenderEditor();
+            refreshActionTemplateSelect();
+          };
+        }
+
+        if (els.managementContent) {
+          els.managementContent.addEventListener("click", handleActionTemplateManagementClick);
+          els.managementContent.addEventListener("change", handleActionTemplateManagementChange);
+        }
+
+        const templateModalForm = document.getElementById("actionPlanTemplateForm");
+        if (templateModalForm) templateModalForm.addEventListener("submit", saveActionPlanTemplateFromModal);
+
+        document.addEventListener("click", event => {
+          const close = event.target.closest("[data-close-action-template-modal]");
+          if (close) closeActionTemplateModal();
+        });
+
+        setTimeout(() => {
+          ensureActionPlanTemplates();
+          refreshActionTemplateSelect();
+        }, 0);
+
+        function canManageActionPlanTemplates(user = currentUser) {
+          if (isFullSystemAdmin(user)) return true;
+          return typeof hasManagementPermission === "function" && hasManagementPermission("manageActionPlanTemplates", user);
+        }
+
+        function requireActionPlanTemplatePermission() {
+          if (!canManageActionPlanTemplates()) {
+            alert("Você não tem permissão para gerenciar templates do Plano de Ação.");
+            return false;
+          }
+          return true;
+        }
+
+        function ensureActionPlanTemplates() {
+          if (!app) return [];
+          app.actionPlanTemplates = normalizeActionPlanTemplates(app.actionPlanTemplates);
+          return app.actionPlanTemplates;
+        }
+
+        function normalizeActionPlanTemplates(raw) {
+          const templates = Array.isArray(raw) ? raw : [];
+          const normalized = templates.map(normalizeActionPlanTemplate).filter(Boolean);
+          if (!normalized.some(template => template.id === "default-action-template")) {
+            normalized.unshift(createDefaultActionPlanTemplate());
+          }
+          return normalized
+            .sort(compareActionPlanTemplates)
+            .map((template, index) => ({ ...template, order: Number.isFinite(Number(template.order)) ? Number(template.order) : index + 1 }));
+        }
+
+        function normalizeActionPlanTemplate(raw = {}, index = 0) {
+          const id = String(raw.id || createId());
+          const now = new Date().toISOString();
+          return {
+            id,
+            name: String(raw.name || raw.title || "Template sem nome"),
+            description: String(raw.description || ""),
+            category: String(raw.category || "Geral"),
+            type: ["actions", "equipment", "trainings", "mixed"].includes(raw.type) ? raw.type : "actions",
+            active: raw.active !== false,
+            systemDefault: id === "default-action-template" || raw.systemDefault === true,
+            order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : index + 1,
+            rows: normalizeTemplateRows(raw.rows || raw.actions || []),
+            equipmentRows: normalizeTemplateEquipmentRows(raw.equipmentRows || raw.equipment || []),
+            trainingRows: normalizeTemplateTrainingRows(raw.trainingRows || raw.trainings || []),
+            createdAt: raw.createdAt || now,
+            updatedAt: raw.updatedAt || raw.createdAt || now,
+            createdBy: String(raw.createdBy || ""),
+            updatedBy: String(raw.updatedBy || "")
+          };
+        }
+
+        function normalizeTemplateRows(rows) {
+          return (Array.isArray(rows) ? rows : [])
+            .map(row => normalizeRow({ ...row, id: row.id || createId() }, "actions"))
+            .map(row => ({
+              id: row.id || createId(),
+              actionHtml: richFromAny(row.actionHtml || row.action || ""),
+              responsible: String(row.responsible || ""),
+              when: String(row.when || ""),
+              priority: normalizePriority(row.priority),
+              progress: clampProgress(row.progress),
+              status: normalizeStatus(row.status),
+              observationHtml: richFromAny(row.observationHtml || row.observation || ""),
+              lastEdited: row.lastEdited || new Date().toISOString()
+            }))
+            .filter(row => stripHtmlText(row.actionHtml).trim());
+        }
+
+        function normalizeTemplateEquipmentRows(rows) {
+          return (Array.isArray(rows) ? rows : [])
+            .map(row => normalizeRow({ ...row, id: row.id || createId() }, "equipment"))
+            .map(row => ({
+              id: row.id || createId(),
+              descriptionHtml: richFromAny(row.descriptionHtml || row.description || ""),
+              responsible: String(row.responsible || ""),
+              status: normalizeStatus(row.status),
+              observationHtml: richFromAny(row.observationHtml || row.observation || ""),
+              lastEdited: row.lastEdited || new Date().toISOString()
+            }))
+            .filter(row => stripHtmlText(row.descriptionHtml).trim());
+        }
+
+        function normalizeTemplateTrainingRows(rows) {
+          return (Array.isArray(rows) ? rows : [])
+            .map(row => normalizeRow({ ...row, id: row.id || createId() }, "trainings"))
+            .map(row => ({
+              id: row.id || createId(),
+              trainingHtml: richFromAny(row.trainingHtml || row.training || row.description || ""),
+              responsible: String(row.responsible || ""),
+              when: String(row.when || ""),
+              status: normalizeStatus(row.status),
+              observationHtml: richFromAny(row.observationHtml || row.observation || ""),
+              lastEdited: row.lastEdited || new Date().toISOString()
+            }))
+            .filter(row => stripHtmlText(row.trainingHtml).trim());
+        }
+
+        function createDefaultActionPlanTemplate() {
+          const data = originalCreatePlanData({ useTemplate: true, company: "Empresa", documentType: "PGR" });
+          return {
+            id: "default-action-template",
+            name: "Template padrão",
+            description: "Template padrão usado ao criar/carregar um Plano de Ação.",
+            category: "Padrão SATS",
+            type: "actions",
+            active: true,
+            systemDefault: true,
+            order: 1,
+            rows: normalizeTemplateRows(data.actions || []),
+            equipmentRows: normalizeTemplateEquipmentRows(data.equipment || []),
+            trainingRows: normalizeTemplateTrainingRows(data.trainings || []),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: "sistema",
+            updatedBy: "sistema"
+          };
+        }
+
+        function getDefaultActionPlanTemplate() {
+          return ensureActionPlanTemplates().find(template => template.id === "default-action-template") || createDefaultActionPlanTemplate();
+        }
+
+        function compareActionPlanTemplates(a, b) {
+          const cat = String(a.category || "").localeCompare(String(b.category || ""), "pt-BR");
+          if (cat) return cat;
+          const order = Number(a.order || 0) - Number(b.order || 0);
+          if (order) return order;
+          return String(a.name || "").localeCompare(String(b.name || ""), "pt-BR");
+        }
+
+        function cloneTemplateRows(rows) {
+          return normalizeTemplateRows(rows).map(row => ({ ...deepClone(row), id: createId(), lastEdited: new Date().toISOString() }));
+        }
+
+        function cloneTemplateEquipmentRows(rows) {
+          return normalizeTemplateEquipmentRows(rows).map(row => ({ ...deepClone(row), id: createId(), lastEdited: new Date().toISOString() }));
+        }
+
+        function cloneTemplateTrainingRows(rows) {
+          return normalizeTemplateTrainingRows(rows).map(row => ({ ...deepClone(row), id: createId(), lastEdited: new Date().toISOString() }));
+        }
+
+        function stripHtmlText(value) {
+          const template = document.createElement("template");
+          template.innerHTML = sanitizeRichHtml(value || "");
+          template.content.querySelectorAll("br").forEach(br => br.replaceWith(document.createTextNode("\n")));
+          template.content.querySelectorAll("p, div, li").forEach(node => node.appendChild(document.createTextNode("\n")));
+          return (template.content.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
+        }
+
+        function rowsToPipeText(rows) {
+          return normalizeTemplateRows(rows).map(row => [
+            stripHtmlText(row.actionHtml),
+            row.responsible || "",
+            row.when || "",
+            row.priority || "Média",
+            row.status || "Não iniciado",
+            String(clampProgress(row.progress)),
+            stripHtmlText(row.observationHtml)
+          ].map(part => String(part || "").replace(/\s*\|\s*/g, " / ")).join(" | ")).join("\n");
+        }
+
+        function pipeTextToRows(value) {
+          return String(value || "")
+            .split(/\n+/)
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => {
+              const parts = line.split("|").map(part => part.trim());
+              return normalizeRow({
+                id: createId(),
+                actionHtml: plainToRich(parts[0] || ""),
+                responsible: parts[1] || "Empresa",
+                when: parts[2] || "",
+                priority: parts[3] || "Média",
+                status: parts[4] || "Não iniciado",
+                progress: parts[5] || 0,
+                observationHtml: plainToRich(parts.slice(6).join(" | ") || "")
+              }, "actions");
+            })
+            .filter(row => stripHtmlText(row.actionHtml));
+        }
+
+        function equipmentRowsToPipeText(rows) {
+          return normalizeTemplateEquipmentRows(rows).map(row => [
+            stripHtmlText(row.descriptionHtml),
+            row.responsible || "",
+            row.status || "Não iniciado",
+            stripHtmlText(row.observationHtml)
+          ].map(part => String(part || "").replace(/\s*\|\s*/g, " / ")).join(" | ")).join("\n");
+        }
+
+        function trainingRowsToPipeText(rows) {
+          return normalizeTemplateTrainingRows(rows).map(row => [
+            stripHtmlText(row.trainingHtml),
+            row.responsible || "",
+            row.when || "",
+            row.status || "Não iniciado",
+            stripHtmlText(row.observationHtml)
+          ].map(part => String(part || "").replace(/\s*\|\s*/g, " / ")).join(" | ")).join("\n");
+        }
+
+        function pipeTextToEquipmentRows(value) {
+          return String(value || "")
+            .split(/\n+/)
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => {
+              const parts = line.split("|").map(part => part.trim());
+              return normalizeRow({
+                id: createId(),
+                descriptionHtml: plainToRich(parts[0] || ""),
+                responsible: parts[1] || "Empresa",
+                status: parts[2] || "Não iniciado",
+                observationHtml: plainToRich(parts.slice(3).join(" | ") || "")
+              }, "equipment");
+            })
+            .filter(row => stripHtmlText(row.descriptionHtml));
+        }
+
+        function pipeTextToTrainingRows(value) {
+          return String(value || "")
+            .split(/\n+/)
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => {
+              const parts = line.split("|").map(part => part.trim());
+              return normalizeRow({
+                id: createId(),
+                trainingHtml: plainToRich(parts[0] || ""),
+                responsible: parts[1] || "Empresa/Consultoria",
+                when: parts[2] || "",
+                status: parts[3] || "Não iniciado",
+                observationHtml: plainToRich(parts.slice(4).join(" | ") || "")
+              }, "trainings");
+            })
+            .filter(row => stripHtmlText(row.trainingHtml));
+        }
+
+        function prependPlanManagementSubtabs() {
+          if (!els.managementContent || els.managementContent.querySelector("[data-management-plans-view]")) return;
+          els.managementContent.insertAdjacentHTML("afterbegin", renderPlanManagementSubtabs("plans"));
+        }
+
+        function renderPlanManagementSubtabs(activeView) {
+          return `
+            <div class="management-subtabs" aria-label="Subáreas de Planos">
+              <button class="management-subtab ${activeView === "plans" ? "is-active" : ""}" type="button" data-management-plans-view="plans">Planos</button>
+              <button class="management-subtab ${activeView === "templates" ? "is-active" : ""}" type="button" data-management-plans-view="templates">Templates</button>
+            </div>
+          `;
+        }
+
+        function renderManagementPlanTemplates() {
+          const templates = ensureActionPlanTemplates();
+          const canManage = canManageActionPlanTemplates();
+          const query = normalizeText(document.getElementById("actionTemplateSearchInput")?.value || "");
+          const statusFilter = document.getElementById("actionTemplateStatusFilter")?.value || "all";
+          const filtered = templates.filter(template => {
+            if (statusFilter === "active" && !template.active) return false;
+            if (statusFilter === "inactive" && template.active) return false;
+            if (!query) return true;
+            return normalizeText(`${template.name} ${template.description} ${template.category}`).includes(query);
+          });
+
+          els.managementContent.innerHTML = `
+            ${renderPlanManagementSubtabs("templates")}
+            <section class="management-panel">
+              <div class="management-panel-head">
+                <div>
+                  <h2>Templates do Plano de Ação</h2>
+                  <p class="management-help-text">Crie, altere, duplique, desative ou exclua modelos de ações usados no Plano de Ação.</p>
+                </div>
+                ${canManage ? `<button class="button primary" type="button" data-action-template-action="new">Novo template</button>` : ""}
+              </div>
+              <div class="management-filters">
+                <label class="management-filter">Buscar template
+                  <input id="actionTemplateSearchInput" type="search" value="${escapeAttr(document.getElementById("actionTemplateSearchInput")?.value || "")}" placeholder="Nome, categoria ou descrição" data-action-template-filter>
+                </label>
+                <label class="management-filter">Status
+                  <select id="actionTemplateStatusFilter" data-action-template-filter>
+                    <option value="all" ${statusFilter === "all" ? "selected" : ""}>Todos</option>
+                    <option value="active" ${statusFilter === "active" ? "selected" : ""}>Ativos</option>
+                    <option value="inactive" ${statusFilter === "inactive" ? "selected" : ""}>Inativos</option>
+                  </select>
+                </label>
+              </div>
+              <div class="management-table-wrap">
+                <table class="management-table">
+                  <thead>
+                    <tr>
+                      <th>Template</th>
+                      <th>Categoria</th>
+                      <th>Status</th>
+                      <th>Linhas</th>
+                      <th>Última edição</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${filtered.length ? filtered.map(template => `
+                      <tr>
+                        <td><strong>${escapeHtml(template.name)}</strong><small>${escapeHtml(template.description || "Sem descrição")}</small>${template.systemDefault ? `<small>Template padrão do sistema</small>` : ""}</td>
+                        <td>${escapeHtml(template.category || "Geral")}</td>
+                        <td><span class="management-status-badge">${template.active ? "Ativo" : "Inativo"}</span></td>
+                        <td>${template.rows.length} ações<br><small>${(template.equipmentRows || []).length} equipamentos · ${(template.trainingRows || []).length} treinamentos</small></td>
+                        <td>${escapeHtml(formatDateTime(template.updatedAt))}<small>${escapeHtml(template.updatedBy || template.createdBy || "-")}</small></td>
+                        <td>
+                          <div class="management-item-actions">
+                            ${canManage ? `<button class="button" type="button" data-action-template-action="edit" data-template-id="${escapeAttr(template.id)}">Alterar</button>` : ""}
+                            ${canManage ? `<button class="button" type="button" data-action-template-action="duplicate" data-template-id="${escapeAttr(template.id)}">Duplicar</button>` : ""}
+                            ${canManage ? `<button class="button" type="button" data-action-template-action="toggle" data-template-id="${escapeAttr(template.id)}">${template.active ? "Desativar" : "Ativar"}</button>` : ""}
+                            ${template.systemDefault && canManage ? `<button class="button" type="button" data-action-template-action="restore-default" data-template-id="${escapeAttr(template.id)}">Restaurar padrão</button>` : ""}
+                            ${!template.systemDefault && canManage ? `<button class="button danger" type="button" data-action-template-action="delete" data-template-id="${escapeAttr(template.id)}">Excluir</button>` : ""}
+                          </div>
+                        </td>
+                      </tr>
+                    `).join("") : `<tr><td colspan="6"><div class="management-empty">Nenhum template encontrado.</div></td></tr>`}
+                  </tbody>
+                </table>
+              </div>
+              <p class="management-help-text"><strong>Templates:</strong> a edição agora inclui ações, equipamentos de emergência e treinamentos no mesmo modal.</p>
+            </section>
+          `;
+        }
+
+        function handleActionTemplateManagementClick(event) {
+          const subtab = event.target.closest("[data-management-plans-view]");
+          if (subtab) {
+            activeManagementPlansView = subtab.dataset.managementPlansView || "plans";
+            renderManagementPlans();
+            return;
+          }
+          const button = event.target.closest("[data-action-template-action]");
+          if (!button) return;
+          const action = button.dataset.actionTemplateAction;
+          const templateId = button.dataset.templateId || "";
+          if (action === "new") return openActionTemplateModal();
+          if (action === "edit") return openActionTemplateModal(templateId);
+          if (action === "duplicate") return duplicateActionPlanTemplate(templateId);
+          if (action === "toggle") return toggleActionPlanTemplate(templateId);
+          if (action === "delete") return deleteActionPlanTemplate(templateId);
+          if (action === "restore-default") return restoreDefaultActionPlanTemplate();
+        }
+
+        function handleActionTemplateManagementChange(event) {
+          if (event.target && event.target.matches("[data-action-template-filter]")) {
+            renderManagementPlanTemplates();
+          }
+        }
+
+        function openActionTemplateModal(templateId = "") {
+          if (!requireActionPlanTemplatePermission()) return;
+          ensureActionTemplateModal();
+          const template = templateId ? ensureActionPlanTemplates().find(item => item.id === templateId) : null;
+          document.getElementById("actionPlanTemplateModalTitle").textContent = template ? "Alterar template" : "Novo template";
+          document.getElementById("actionTemplateIdInput").value = template ? template.id : "";
+          document.getElementById("actionTemplateNameInput").value = template ? template.name : "";
+          document.getElementById("actionTemplateCategoryInput").value = template ? template.category : "Geral";
+          document.getElementById("actionTemplateDescriptionInput").value = template ? template.description : "";
+          document.getElementById("actionTemplateActiveInput").checked = template ? template.active !== false : true;
+          document.getElementById("actionTemplateRowsInput").value = template ? rowsToPipeText(template.rows) : "";
+          const equipmentInput = document.getElementById("actionTemplateEquipmentRowsInput");
+          if (equipmentInput) equipmentInput.value = template ? equipmentRowsToPipeText(template.equipmentRows || []) : "";
+          const trainingInput = document.getElementById("actionTemplateTrainingRowsInput");
+          if (trainingInput) trainingInput.value = template ? trainingRowsToPipeText(template.trainingRows || []) : "";
+          const deleteHint = document.getElementById("actionTemplateDefaultHint");
+          if (deleteHint) deleteHint.hidden = !(template && template.systemDefault);
+          openModal("actionPlanTemplateModal");
+          setTimeout(() => document.getElementById("actionTemplateNameInput")?.focus(), 30);
+        }
+
+        function saveActionPlanTemplateFromModal(event) {
+          event.preventDefault();
+          if (!requireActionPlanTemplatePermission()) return;
+          const id = document.getElementById("actionTemplateIdInput").value || createId();
+          const existing = ensureActionPlanTemplates().find(item => item.id === id);
+          const name = document.getElementById("actionTemplateNameInput").value.trim();
+          const category = document.getElementById("actionTemplateCategoryInput").value.trim() || "Geral";
+          const description = document.getElementById("actionTemplateDescriptionInput").value.trim();
+          const active = document.getElementById("actionTemplateActiveInput").checked;
+          const rows = pipeTextToRows(document.getElementById("actionTemplateRowsInput").value);
+          const equipmentRows = pipeTextToEquipmentRows(document.getElementById("actionTemplateEquipmentRowsInput")?.value || "");
+          const trainingRows = pipeTextToTrainingRows(document.getElementById("actionTemplateTrainingRowsInput")?.value || "");
+          if (!name) return alert("Informe o nome do template.");
+          if (!rows.length && !equipmentRows.length && !trainingRows.length) return alert("Inclua pelo menos uma ação, equipamento de emergência ou treinamento no template.");
+          const now = new Date().toISOString();
+          const template = normalizeActionPlanTemplate({
+            ...(existing || {}),
+            id,
+            name,
+            category,
+            description,
+            active,
+            rows,
+            equipmentRows,
+            trainingRows,
+            systemDefault: existing && existing.systemDefault === true,
+            createdAt: existing ? existing.createdAt : now,
+            createdBy: existing ? existing.createdBy : currentUser?.email || "",
+            updatedAt: now,
+            updatedBy: currentUser?.email || ""
+          });
+          const list = ensureActionPlanTemplates().filter(item => item.id !== id);
+          list.push(template);
+          app.actionPlanTemplates = normalizeActionPlanTemplates(list);
+          recordActivity(existing ? "Editou template de Plano de Ação" : "Criou template de Plano de Ação", `${existing ? "Editou" : "Criou"} o template ${template.name}.`);
+          saveApp({ fullSave: true, management: true });
+          closeActionTemplateModal();
+          refreshActionTemplateSelect();
+          renderManagementPlanTemplates();
+        }
+
+        function duplicateActionPlanTemplate(templateId) {
+          if (!requireActionPlanTemplatePermission()) return;
+          const template = ensureActionPlanTemplates().find(item => item.id === templateId);
+          if (!template) return;
+          const now = new Date().toISOString();
+          const copy = normalizeActionPlanTemplate({
+            ...deepClone(template),
+            id: createId(),
+            name: `${template.name} - cópia`,
+            systemDefault: false,
+            rows: cloneTemplateRows(template.rows),
+            equipmentRows: cloneTemplateEquipmentRows(template.equipmentRows || []),
+            trainingRows: cloneTemplateTrainingRows(template.trainingRows || []),
+            createdAt: now,
+            updatedAt: now,
+            createdBy: currentUser?.email || "",
+            updatedBy: currentUser?.email || ""
+          });
+          app.actionPlanTemplates = normalizeActionPlanTemplates([...ensureActionPlanTemplates(), copy]);
+          recordActivity("Duplicou template de Plano de Ação", `Duplicou o template ${template.name}.`);
+          saveApp({ fullSave: true, management: true });
+          renderManagementPlanTemplates();
+          refreshActionTemplateSelect();
+        }
+
+        function toggleActionPlanTemplate(templateId) {
+          if (!requireActionPlanTemplatePermission()) return;
+          const template = ensureActionPlanTemplates().find(item => item.id === templateId);
+          if (!template) return;
+          template.active = !template.active;
+          template.updatedAt = new Date().toISOString();
+          template.updatedBy = currentUser?.email || "";
+          app.actionPlanTemplates = normalizeActionPlanTemplates(app.actionPlanTemplates);
+          recordActivity(template.active ? "Ativou template de Plano de Ação" : "Desativou template de Plano de Ação", `${template.active ? "Ativou" : "Desativou"} o template ${template.name}.`);
+          saveApp({ fullSave: true, management: true });
+          renderManagementPlanTemplates();
+          refreshActionTemplateSelect();
+        }
+
+        function deleteActionPlanTemplate(templateId) {
+          if (!requireActionPlanTemplatePermission()) return;
+          const template = ensureActionPlanTemplates().find(item => item.id === templateId);
+          if (!template || template.systemDefault) return;
+          const confirmation = prompt(`Para excluir o template "${template.name}", digite EXCLUIR TEMPLATE:`);
+          if (confirmation !== "EXCLUIR TEMPLATE") return;
+          app.actionPlanTemplates = ensureActionPlanTemplates().filter(item => item.id !== templateId);
+          recordActivity("Excluiu template de Plano de Ação", `Excluiu o template ${template.name}.`);
+          saveApp({ fullSave: true, management: true });
+          renderManagementPlanTemplates();
+          refreshActionTemplateSelect();
+        }
+
+        function restoreDefaultActionPlanTemplate() {
+          if (!requireActionPlanTemplatePermission()) return;
+          if (!confirm("Restaurar o Template padrão original? As alterações feitas nesse template serão substituídas.")) return;
+          app.actionPlanTemplates = normalizeActionPlanTemplates([
+            createDefaultActionPlanTemplate(),
+            ...ensureActionPlanTemplates().filter(item => item.id !== "default-action-template")
+          ]);
+          recordActivity("Restaurou template padrão de Plano de Ação", "Restaurou o Template padrão do Plano de Ação.");
+          saveApp({ fullSave: true, management: true });
+          renderManagementPlanTemplates();
+          refreshActionTemplateSelect();
+        }
+
+        function refreshActionTemplateSelect() {
+          const select = document.getElementById("templateActionSelect");
+          if (!select) return;
+          const templates = ensureActionPlanTemplates().filter(template => template.active);
+          const customTemplates = templates.filter(template => !template.systemDefault);
+          select.innerHTML = `
+            <option value="">Criar dados...</option>
+            <option value="blank">Plano em branco</option>
+            <option value="template">Template padrão</option>
+            ${customTemplates.length ? `<optgroup label="Templates personalizados">${customTemplates.map(template => `<option value="tpl:${escapeAttr(template.id)}">${escapeHtml(template.category ? template.category + " - " + template.name : template.name)}</option>`).join("")}</optgroup>` : ""}
+          `;
+        }
+
+        const originalApplyTemplateChoiceToCurrentPlan = applyTemplateChoiceToCurrentPlan;
+        applyTemplateChoiceToCurrentPlan = function patchedApplyTemplateChoiceToCurrentPlan(event) {
+          const choice = event.target.value;
+          if (!String(choice || "").startsWith("tpl:")) {
+            return originalApplyTemplateChoiceToCurrentPlan(event);
+          }
+          if (blockRestrictedAdminAccess()) return;
+          const plan = currentPlan();
+          if (!plan) return;
+          event.target.value = "";
+          const templateId = choice.slice(4);
+          const template = ensureActionPlanTemplates().find(item => item.id === templateId);
+          if (!template) return alert("Template não encontrado.");
+          if (!confirm(`Aplicar o template "${template.name}" e substituir os dados do plano atual?`)) return;
+          const data = originalCreatePlanData({ useTemplate: true, company: plan.company, documentType: plan.documentType });
+          data.actions = cloneTemplateRows(template.rows);
+          data.equipment = cloneTemplateEquipmentRows(template.equipmentRows || []);
+          data.trainings = cloneTemplateTrainingRows(template.trainingRows || []);
+          plan.data = normalizePlanData(data);
+          touchPlan(plan);
+          recordActivity("Aplicou template de Plano de Ação", `Aplicou o template ${template.name} no plano ${plan.title}.`, { plan });
+          saveApp();
+          renderEditor();
+        };
+
+        // O listener original do seletor foi registrado antes deste patch e fica preso à função antiga.
+        // Esta captura intercepta templates personalizados antes do listener antigo, evitando que caiam como "plano em branco".
+        setTimeout(() => {
+          const select = document.getElementById("templateActionSelect");
+          if (!select || select.dataset.customTemplateApplyListener === "true") return;
+          select.dataset.customTemplateApplyListener = "true";
+          select.addEventListener("change", event => {
+            const choice = event.target && event.target.value;
+            if (!String(choice || "").startsWith("tpl:")) return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+            applyTemplateChoiceToCurrentPlan(event);
+          }, true);
+        }, 0);
+
+        function ensureActionTemplateModal() {
+          if (document.getElementById("actionPlanTemplateModal")) return;
+          document.body.insertAdjacentHTML("beforeend", `
+            <section class="modal hidden" id="actionPlanTemplateModal" aria-modal="true" role="dialog">
+              <div class="modal-card action-template-modal-card">
+                <div class="modal-head">
+                  <h2 id="actionPlanTemplateModalTitle">Alterar template</h2>
+                  <button class="button icon-only" type="button" data-close-action-template-modal aria-label="Fechar">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                  </button>
+                </div>
+                <form class="modal-form" id="actionPlanTemplateForm">
+                  <input type="hidden" id="actionTemplateIdInput">
+                  <div class="modal-grid">
+                    <label class="field">Nome do template
+                      <input type="text" id="actionTemplateNameInput" required placeholder="Ex.: PGR básico">
+                    </label>
+                    <label class="field">Categoria
+                      <input type="text" id="actionTemplateCategoryInput" placeholder="Ex.: Geral, PGR, NR-06">
+                    </label>
+                  </div>
+                  <label class="field">Descrição
+                    <input type="text" id="actionTemplateDescriptionInput" placeholder="Explique quando usar esse template">
+                  </label>
+                  <label class="checkbox-line"><input type="checkbox" id="actionTemplateActiveInput"> Template ativo no seletor do plano</label>
+                  <div class="settings-card" id="actionTemplateDefaultHint" hidden>
+                    <strong>Atenção</strong>
+                    <span>Este é o template padrão. Ele pode ser alterado, mas não pode ser excluído. Use “Restaurar padrão” para voltar ao modelo original.</span>
+                  </div>
+                  <label class="field">Linhas de ações do template
+                    <textarea id="actionTemplateRowsInput" class="action-template-rows-textarea" placeholder="Ação | Responsável | Quando | Prioridade | Status | Progresso | Observação"></textarea>
+                  </label>
+                  <label class="field">Equipamentos de emergência do template
+                    <textarea id="actionTemplateEquipmentRowsInput" class="action-template-rows-textarea" placeholder="Descrição | Responsável | Status | Observação"></textarea>
+                  </label>
+                  <label class="field">Treinamentos do template
+                    <textarea id="actionTemplateTrainingRowsInput" class="action-template-rows-textarea" placeholder="Treinamento | Responsável | Quando | Status | Observação"></textarea>
+                  </label>
+                  <div class="settings-card">
+                    <strong>Como preencher</strong>
+                    <span>Use as mini tabelas abaixo. O sistema salva ações, equipamentos de emergência e treinamentos no mesmo template.</span>
+                  </div>
+                  <div class="modal-actions">
+                    <button class="button" type="button" data-close-action-template-modal>Cancelar</button>
+                    <button class="button primary" type="submit">Salvar template</button>
+                  </div>
+                </form>
+              </div>
+            </section>
+          `);
+        }
+
+        function closeActionTemplateModal() {
+          closeModal("actionPlanTemplateModal");
+        }
+
+        function injectActionTemplateStyles() {
+          if (document.getElementById("actionTemplatePatchStyles")) return;
+          const style = document.createElement("style");
+          style.id = "actionTemplatePatchStyles";
+          style.textContent = `
+            .management-subtabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding-bottom:4px}
+            .management-subtab{min-height:38px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--muted);padding:7px 13px;font-weight:850;white-space:nowrap}
+            .management-subtab.is-active{border-color:#8b5cf6;background:#7c3aed;color:#fff}
+            .management-help-text{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:700}
+            .action-template-modal-card{width:min(920px,100%)}
+            .action-template-rows-textarea{min-height:320px!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;white-space:pre!important}
+          `;
+          document.head.appendChild(style);
+        }
+      })();
+
+      (function installActionPlanTemplateStableMiniEditor() {
+        if (window.__SATS_ACTION_TEMPLATE_STABLE_MINI_EDITOR_V6__) return;
+        window.__SATS_ACTION_TEMPLATE_STABLE_MINI_EDITOR_V6__ = true;
+
+        const state = { actions: [], equipment: [], trainings: [] };
+        let loadedKey = "";
+
+        injectStableTemplateEditorStyles();
+
+        document.addEventListener("click", event => {
+          const trigger = event.target.closest('[data-action-template-action="new"], [data-action-template-action="edit"]');
+          if (!trigger) return;
+          loadedKey = "";
+          setTimeout(upgradeStableTemplateModal, 70);
+        }, true);
+
+        document.addEventListener("click", event => {
+          const button = event.target.closest("[data-stable-template-row-action]");
+          if (!button) return;
+          const modal = document.getElementById("actionPlanTemplateModal");
+          if (!modal || modal.classList.contains("hidden")) return;
+          event.preventDefault();
+          event.stopPropagation();
+
+          syncStableRowsFromEditor();
+          const section = button.dataset.section || "actions";
+          const list = getSectionRows(section);
+          const action = button.dataset.stableTemplateRowAction;
+          const index = Number(button.dataset.rowIndex);
+
+          if (action === "add") list.push(createBlankRow(section));
+          if (action === "duplicate" && list[index]) list.splice(index + 1, 0, { ...createBlankRow(section), ...list[index] });
+          if (action === "delete" && list.length > 0) list.splice(index, 1);
+          if (action === "up" && index > 0) [list[index - 1], list[index]] = [list[index], list[index - 1]];
+          if (action === "down" && index < list.length - 1) [list[index + 1], list[index]] = [list[index], list[index + 1]];
+
+          if (!list.length) list.push(createBlankRow(section));
+          renderStableTemplateRows(section);
+        });
+
+        document.addEventListener("input", event => {
+          if (event.target.closest("#stableActionTemplateMiniEditor")) syncStableRowsFromEditor();
+        }, true);
+
+        document.addEventListener("change", event => {
+          if (event.target.closest("#stableActionTemplateMiniEditor")) syncStableRowsFromEditor();
+        }, true);
+
+        document.addEventListener("submit", event => {
+          const form = event.target && event.target.id === "actionPlanTemplateForm" ? event.target : null;
+          if (!form) return;
+          syncStableRowsFromEditor();
+        }, true);
+
+        document.addEventListener("click", event => {
+          const close = event.target.closest("[data-close-action-template-modal]");
+          if (close) {
+            state.actions = [];
+            state.equipment = [];
+            state.trainings = [];
+            loadedKey = "";
+          }
+        }, true);
+
+        function upgradeStableTemplateModal() {
+          const modal = document.getElementById("actionPlanTemplateModal");
+          const actionsTextarea = document.getElementById("actionTemplateRowsInput");
+          const equipmentTextarea = document.getElementById("actionTemplateEquipmentRowsInput");
+          const trainingTextarea = document.getElementById("actionTemplateTrainingRowsInput");
+          const form = document.getElementById("actionPlanTemplateForm");
+          if (!modal || !actionsTextarea || !form || modal.classList.contains("hidden")) return;
+
+          [actionsTextarea, equipmentTextarea, trainingTextarea].forEach(textarea => {
+            const label = textarea && textarea.closest("label.field");
+            if (label) label.classList.add("stable-template-hidden-pipe-field");
+          });
+          const infoCard = trainingTextarea?.closest("label.field")?.nextElementSibling || actionsTextarea.closest("label.field")?.nextElementSibling;
+          if (infoCard && infoCard.classList.contains("settings-card")) infoCard.classList.add("stable-template-hidden-pipe-field");
+
+          if (!document.getElementById("stableActionTemplateMiniEditor")) {
+            const html = `
+              <section class="stable-action-template-mini-plan" id="stableActionTemplateMiniEditor">
+                <div class="stable-action-template-mini-head">
+                  <div>
+                    <strong>Template do Plano de Ação</strong>
+                    <span>Monte o template como uma versão reduzida da página do Plano de Ação: ações, equipamentos de emergência e treinamentos no mesmo lugar.</span>
+                  </div>
+                </div>
+                ${renderSectionShell("actions", "Ações do Plano de Ação", "Ações que serão inseridas na tabela principal do plano.")}
+                ${renderSectionShell("equipment", "Equipamentos de emergência", "Descrições que serão inseridas na área de equipamentos de emergência.")}
+                ${renderSectionShell("trainings", "Treinamentos", "Treinamentos que serão inseridos na área de capacitações/treinamentos.")}
+                <p class="management-help-text">Ao aplicar o template, todas as linhas preenchidas serão copiadas para o plano com IDs novos. Linhas vazias são ignoradas.</p>
+              </section>
+            `;
+            const firstLabel = actionsTextarea.closest("label.field");
+            if (firstLabel) firstLabel.insertAdjacentHTML("beforebegin", html);
+            else form.insertAdjacentHTML("beforeend", html);
+          }
+
+          const templateId = document.getElementById("actionTemplateIdInput")?.value || "new";
+          const key = `${templateId}::${actionsTextarea.value || ""}::${equipmentTextarea?.value || ""}::${trainingTextarea?.value || ""}`;
+          if (loadedKey !== key) {
+            state.actions = parsePipeRows("actions", actionsTextarea.value);
+            state.equipment = parsePipeRows("equipment", equipmentTextarea?.value || "");
+            state.trainings = parsePipeRows("trainings", trainingTextarea?.value || "");
+            if (!state.actions.length) state.actions = [createBlankRow("actions")];
+            if (!state.equipment.length) state.equipment = [createBlankRow("equipment")];
+            if (!state.trainings.length) state.trainings = [createBlankRow("trainings")];
+            loadedKey = key;
+            renderStableTemplateRows("actions");
+            renderStableTemplateRows("equipment");
+            renderStableTemplateRows("trainings");
+          }
+        }
+
+        function renderSectionShell(section, title, description) {
+          const columns = section === "actions"
+            ? `<th style="width:54px">Item</th><th>Ação recomendada</th><th style="width:150px">Responsável</th><th style="width:135px">Quando</th><th style="width:120px">Prioridade</th><th style="width:145px">Status</th><th>Observações</th><th style="width:155px">Ações</th>`
+            : section === "equipment"
+              ? `<th style="width:54px">Item</th><th>Descrição do equipamento</th><th style="width:165px">Responsável</th><th style="width:145px">Status</th><th>Observações</th><th style="width:155px">Ações</th>`
+              : `<th style="width:54px">Item</th><th>Treinamento</th><th style="width:165px">Responsável</th><th style="width:145px">Quando</th><th style="width:145px">Status</th><th>Observações</th><th style="width:155px">Ações</th>`;
+          return `
+            <div class="stable-action-template-section" data-stable-section="${section}">
+              <div class="stable-action-template-mini-head">
+                <div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(description)}</span></div>
+                <button class="button primary" type="button" data-stable-template-row-action="add" data-section="${section}">Adicionar linha</button>
+              </div>
+              <div class="stable-action-template-table-wrap">
+                <table class="stable-action-template-table stable-action-template-table-${section}">
+                  <thead><tr>${columns}</tr></thead>
+                  <tbody id="stableActionTemplateMiniRows-${section}"></tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+
+        function renderStableTemplateRows(section) {
+          const tbody = document.getElementById(`stableActionTemplateMiniRows-${section}`);
+          if (!tbody) return;
+          const rows = getSectionRows(section);
+          const priorities = typeof PRIORITIES !== "undefined" && Array.isArray(PRIORITIES) ? PRIORITIES : ["Alta", "Média", "Baixa"];
+          const statuses = typeof STATUSES !== "undefined" && Array.isArray(STATUSES) ? STATUSES : ["Não iniciado", "Em andamento", "Concluído", "Cancelado"];
+
+          tbody.innerHTML = rows.map((row, index) => {
+            if (section === "actions") {
+              return `
+                <tr data-section="actions" data-row-index="${index}">
+                  <td><span class="item-number">${index + 1}</span></td>
+                  <td><div class="stable-template-rich-cell" contenteditable="true" data-field="action" data-placeholder="Descreva a ação recomendada">${escapeHtml(row.action || "")}</div></td>
+                  <td><input class="table-input" data-field="responsible" value="${escapeAttr(row.responsible || "")}" list="responsibleSuggestions"></td>
+                  <td><div class="stable-template-when-cell" contenteditable="true" data-field="when" data-placeholder="jan/26">${escapeHtml(row.when || "")}</div></td>
+                  <td><select class="table-select" data-field="priority">${priorities.map(item => `<option value="${escapeAttr(item)}" ${item === row.priority ? "selected" : ""}>${escapeHtml(item)}</option>`).join("")}</select></td>
+                  <td><select class="table-select" data-field="status">${statuses.map(item => `<option value="${escapeAttr(item)}" ${item === row.status ? "selected" : ""}>${escapeHtml(item)}</option>`).join("")}</select></td>
+                  <td><div class="stable-template-rich-cell" contenteditable="true" data-field="observation" data-placeholder="Observações">${escapeHtml(row.observation || "")}</div></td>
+                  <td>${rowActions(section, index)}</td>
+                </tr>`;
+            }
+            if (section === "equipment") {
+              return `
+                <tr data-section="equipment" data-row-index="${index}">
+                  <td><span class="item-number">${index + 1}</span></td>
+                  <td><div class="stable-template-rich-cell" contenteditable="true" data-field="description" data-placeholder="Ex.: Kit de primeiros socorros">${escapeHtml(row.description || "")}</div></td>
+                  <td><input class="table-input" data-field="responsible" value="${escapeAttr(row.responsible || "")}" list="responsibleSuggestions"></td>
+                  <td><select class="table-select" data-field="status">${statuses.map(item => `<option value="${escapeAttr(item)}" ${item === row.status ? "selected" : ""}>${escapeHtml(item)}</option>`).join("")}</select></td>
+                  <td><div class="stable-template-rich-cell" contenteditable="true" data-field="observation" data-placeholder="Observações">${escapeHtml(row.observation || "")}</div></td>
+                  <td>${rowActions(section, index)}</td>
+                </tr>`;
+            }
+            return `
+              <tr data-section="trainings" data-row-index="${index}">
+                <td><span class="item-number">${index + 1}</span></td>
+                <td><div class="stable-template-rich-cell" contenteditable="true" data-field="training" data-placeholder="Ex.: Treinamento NR-06">${escapeHtml(row.training || "")}</div></td>
+                <td><input class="table-input" data-field="responsible" value="${escapeAttr(row.responsible || "")}" list="responsibleSuggestions"></td>
+                <td><div class="stable-template-when-cell" contenteditable="true" data-field="when" data-placeholder="Na admissão / anual">${escapeHtml(row.when || "")}</div></td>
+                <td><select class="table-select" data-field="status">${statuses.map(item => `<option value="${escapeAttr(item)}" ${item === row.status ? "selected" : ""}>${escapeHtml(item)}</option>`).join("")}</select></td>
+                <td><div class="stable-template-rich-cell" contenteditable="true" data-field="observation" data-placeholder="Observações">${escapeHtml(row.observation || "")}</div></td>
+                <td>${rowActions(section, index)}</td>
+              </tr>`;
+          }).join("");
+          syncStableHiddenTextareas();
+        }
+
+        function rowActions(section, index) {
+          return `<div class="stable-template-row-actions">
+            <button class="button icon-only" type="button" title="Mover para cima" data-stable-template-row-action="up" data-section="${section}" data-row-index="${index}">↑</button>
+            <button class="button icon-only" type="button" title="Mover para baixo" data-stable-template-row-action="down" data-section="${section}" data-row-index="${index}">↓</button>
+            <button class="button icon-only" type="button" title="Duplicar linha" data-stable-template-row-action="duplicate" data-section="${section}" data-row-index="${index}">⧉</button>
+            <button class="button icon-only danger" type="button" title="Excluir linha" data-stable-template-row-action="delete" data-section="${section}" data-row-index="${index}">×</button>
+          </div>`;
+        }
+
+        function syncStableRowsFromEditor() {
+          ["actions", "equipment", "trainings"].forEach(section => {
+            const tbody = document.getElementById(`stableActionTemplateMiniRows-${section}`);
+            if (!tbody) return;
+            const rows = [];
+            tbody.querySelectorAll("tr[data-section]").forEach(tr => {
+              const row = createBlankRow(section);
+              tr.querySelectorAll("[data-field]").forEach(field => {
+                const key = field.dataset.field;
+                const value = field.isContentEditable ? normalizeCellText(field.textContent || "") : (field.value || "");
+                row[key] = value;
+              });
+              if (section === "actions") {
+                row.priority = typeof normalizePriority === "function" ? normalizePriority(row.priority) : (row.priority || "Média");
+                row.status = typeof normalizeStatus === "function" ? normalizeStatus(row.status) : (row.status || "Não iniciado");
+              } else {
+                row.status = typeof normalizeStatus === "function" ? normalizeStatus(row.status) : (row.status || "Não iniciado");
+              }
+              rows.push(row);
+            });
+            state[section] = rows.length ? rows : [createBlankRow(section)];
+          });
+          syncStableHiddenTextareas();
+        }
+
+        function syncStableHiddenTextareas() {
+          const actionsTextarea = document.getElementById("actionTemplateRowsInput");
+          const equipmentTextarea = document.getElementById("actionTemplateEquipmentRowsInput");
+          const trainingTextarea = document.getElementById("actionTemplateTrainingRowsInput");
+          if (actionsTextarea) actionsTextarea.value = state.actions.filter(row => row.action || row.responsible || row.when || row.observation).map(row => [
+            row.action || "", row.responsible || "", row.when || "", row.priority || "Média", row.status || "Não iniciado", "0", row.observation || ""
+          ].map(pipeSafe).join(" | ")).join("\n");
+          if (equipmentTextarea) equipmentTextarea.value = state.equipment.filter(row => row.description || row.responsible || row.observation).map(row => [
+            row.description || "", row.responsible || "", row.status || "Não iniciado", row.observation || ""
+          ].map(pipeSafe).join(" | ")).join("\n");
+          if (trainingTextarea) trainingTextarea.value = state.trainings.filter(row => row.training || row.responsible || row.when || row.observation).map(row => [
+            row.training || "", row.responsible || "", row.when || "", row.status || "Não iniciado", row.observation || ""
+          ].map(pipeSafe).join(" | ")).join("\n");
+        }
+
+        function parsePipeRows(section, value) {
+          return String(value || "")
+            .split(/\n+/)
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => {
+              const parts = line.split("|").map(part => part.trim());
+              if (section === "actions") {
+                return { action: parts[0] || "", responsible: parts[1] || "", when: parts[2] || "", priority: normalizeMaybePriority(parts[3]), status: normalizeMaybeStatus(parts[4]), progress: Number(parts[5] || 0) || 0, observation: parts.slice(6).join(" | ") || "" };
+              }
+              if (section === "equipment") {
+                return { description: parts[0] || "", responsible: parts[1] || "", status: normalizeMaybeStatus(parts[2]), observation: parts.slice(3).join(" | ") || "" };
+              }
+              return { training: parts[0] || "", responsible: parts[1] || "", when: parts[2] || "", status: normalizeMaybeStatus(parts[3]), observation: parts.slice(4).join(" | ") || "" };
+            });
+        }
+
+        function getSectionRows(section) {
+          if (section === "equipment") return state.equipment;
+          if (section === "trainings") return state.trainings;
+          return state.actions;
+        }
+
+        function createBlankRow(section) {
+          if (section === "equipment") return { description: "", responsible: "Empresa", status: "Não iniciado", observation: "" };
+          if (section === "trainings") return { training: "", responsible: "Empresa/Consultoria", when: "", status: "Não iniciado", observation: "" };
+          return { action: "", responsible: "Empresa", when: "", priority: "Média", status: "Não iniciado", progress: 0, observation: "" };
+        }
+
+        function normalizeMaybePriority(value) {
+          return typeof normalizePriority === "function" ? normalizePriority(value || "Média") : (value || "Média");
+        }
+
+        function normalizeMaybeStatus(value) {
+          return typeof normalizeStatus === "function" ? normalizeStatus(value || "Não iniciado") : (value || "Não iniciado");
+        }
+
+        function pipeSafe(value) {
+          return String(value || "").replace(/\s*\|\s*/g, " / ").trim();
+        }
+
+        function normalizeCellText(value) {
+          return String(value || "").replace(/\u00a0/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+        }
+
+        function injectStableTemplateEditorStyles() {
+          if (document.getElementById("stableActionTemplateEditorStyles")) return;
+          const style = document.createElement("style");
+          style.id = "stableActionTemplateEditorStyles";
+          style.textContent = `
+            .stable-template-hidden-pipe-field{display:none!important}
+            .action-template-modal-card{width:min(1240px,calc(100vw - 28px))!important;max-height:min(94vh,880px)!important}
+            .stable-action-template-mini-plan{display:grid;gap:14px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);padding:14px;margin-top:4px}
+            .stable-action-template-section{display:grid;gap:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:12px}
+            .stable-action-template-mini-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+            .stable-action-template-mini-head strong,.stable-action-template-mini-head span{display:block}.stable-action-template-mini-head span{color:var(--muted);font-size:12px;font-weight:700;margin-top:3px}
+            .stable-action-template-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-height:330px}
+            .stable-action-template-table{width:100%;min-width:1050px;border-collapse:collapse;table-layout:fixed}
+            .stable-action-template-table-equipment{min-width:850px}.stable-action-template-table-trainings{min-width:950px}
+            .stable-action-template-table th,.stable-action-template-table td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:8px;vertical-align:top;font-size:12px}
+            .stable-action-template-table th{position:sticky;top:0;z-index:1;background:#eef4ff;color:#334155;font-size:10px;font-weight:900;text-transform:uppercase;text-align:left}
+            .stable-action-template-table th:last-child,.stable-action-template-table td:last-child{border-right:0}.stable-action-template-table tr:last-child td{border-bottom:0}
+            .stable-template-rich-cell,.stable-template-when-cell{min-height:42px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--text);padding:8px;outline:none;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}
+            .stable-template-rich-cell:hover,.stable-template-rich-cell:focus,.stable-template-when-cell:hover,.stable-template-when-cell:focus{border-color:#bfdbfe;background:#fff;box-shadow:0 0 0 2px rgba(37,99,235,.08)}
+            .stable-template-rich-cell:empty:before,.stable-template-when-cell:empty:before{content:attr(data-placeholder);color:#94a3b8;font-weight:650}
+            .stable-template-row-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}.stable-template-row-actions .button{height:30px;min-height:30px}.stable-template-row-actions .danger{color:var(--red-text);border-color:#fecaca;background:#fff7f7}
+            html[data-theme="dark"] .stable-action-template-table th{background:#1e293b;color:#cbd5e1}
+            html[data-theme="dark"] .stable-template-rich-cell:hover,html[data-theme="dark"] .stable-template-rich-cell:focus,html[data-theme="dark"] .stable-template-when-cell:hover,html[data-theme="dark"] .stable-template-when-cell:focus{background:#0f172a}
+            @media(max-width:760px){.action-template-modal-card{width:min(100% - 12px,1240px)!important}.stable-action-template-table-wrap{max-height:44vh}}
+          `;
+          document.head.appendChild(style);
+        }
+      })();
+
+      (function installProfilePhotoPreviewPatch() {
+        if (window.__SATS_PROFILE_PHOTO_PREVIEW_PATCH__) return;
+        window.__SATS_PROFILE_PHOTO_PREVIEW_PATCH__ = true;
+
+        injectProfilePhotoPreviewStyles();
+        ensureProfilePhotoPreviewModal();
+
+        document.addEventListener("click", event => {
+          const img = event.target.closest(".profile-card .avatar img, .active-profile .avatar img");
+          if (!img) return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+          openProfilePhotoPreview(img.src, img.closest(".profile-card")?.querySelector(".profile-name")?.textContent || "Foto do perfil");
+        }, true);
+
+        function ensureProfilePhotoPreviewModal() {
+          if (document.getElementById("profilePhotoPreviewModal")) return;
+          document.body.insertAdjacentHTML("beforeend", `
+            <section class="modal hidden" id="profilePhotoPreviewModal" aria-modal="true" role="dialog">
+              <div class="modal-card profile-photo-preview-card">
+                <div class="modal-head">
+                  <h2 id="profilePhotoPreviewTitle">Foto do perfil</h2>
+                  <button class="button icon-only" type="button" data-close-profile-photo-preview aria-label="Fechar">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                  </button>
+                </div>
+                <div class="profile-photo-preview-stage"><img id="profilePhotoPreviewImage" alt="Foto ampliada do perfil"></div>
+              </div>
+            </section>
+          `);
+          document.addEventListener("click", event => {
+            if (event.target.closest("[data-close-profile-photo-preview]") || event.target.id === "profilePhotoPreviewModal") closeModal("profilePhotoPreviewModal");
+          });
+        }
+
+        function openProfilePhotoPreview(src, title) {
+          const img = document.getElementById("profilePhotoPreviewImage");
+          const titleEl = document.getElementById("profilePhotoPreviewTitle");
+          if (!img) return;
+          img.src = src;
+          if (titleEl) titleEl.textContent = title || "Foto do perfil";
+          openModal("profilePhotoPreviewModal");
+        }
+
+        function injectProfilePhotoPreviewStyles() {
+          if (document.getElementById("profilePhotoPreviewStyles")) return;
+          const style = document.createElement("style");
+          style.id = "profilePhotoPreviewStyles";
+          style.textContent = `
+            .profile-card .avatar img,.active-profile .avatar img{cursor:zoom-in}
+            .profile-photo-preview-card{width:min(720px,calc(100vw - 28px));max-height:min(92vh,820px)}
+            .profile-photo-preview-stage{display:grid;place-items:center;min-height:260px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft);overflow:hidden;padding:14px}
+            .profile-photo-preview-stage img{display:block;max-width:100%;max-height:min(70vh,640px);object-fit:contain;border-radius:10px;box-shadow:0 18px 40px rgba(15,23,42,.18)}
+          `;
+          document.head.appendChild(style);
+        }
+      })();
+
+
     })();
   </script>
 </body>
